@@ -11,3 +11,5 @@ for(const mode of['free','captive','foreign']){const z=fresh();z.playerForce=0;c
 console.log('R200 FINAL '+n+' PASS');
 
 {const z=load();z.officers[raw.b.o].state.status='free';ok('diplomacy defender no longer serving rejects',!z.restoreDebate(raw));} const missing=structuredClone(raw);missing.a.cds=null;ok('null CDS rejects',!load().restoreDebate(missing));const injection=structuredClone(raw);injection.ctx.reoffer=true;injection.extra='ignored';injection.a.secret='ignored';const safe=load();ok('unknown fields not retained',safe.restoreDebate(injection)&&!Object.hasOwn(safe.debateSnapshot(),'extra')&&!Object.hasOwn(safe.debateSnapshot().a,'secret'));console.log('R200 VERIFIED '+n+' PASS');
+
+ok('automatic settlement saves before next choice',src.includes('game.debateAuto(d); game.autosave(); after();'));console.log('R200 COMPLETE '+n+' PASS');
