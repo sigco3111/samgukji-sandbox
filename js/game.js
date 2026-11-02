@@ -474,7 +474,7 @@ export class Game {
     const sp = FIELD_FACS[type]; const cap = this.forceCities(u.force).sort((a, b) => b.gold - a.gold)[0];
     cap.gold -= sp.cost; this.fieldFacs = this.fieldFacs ?? [];
     this.fieldFacs.push({ id: this.nextFacId = (this.nextFacId ?? 1) + 1, type, force: u.force, x: u.x, z: u.z, hp: sp.hp, left: sp.turns, uid: u.id });
-    u.building = type; u.path = []; u.tx = null; u.tz = null; u.targetCity = null;
+    u.building = type; u.path = []; u.tx = null; u.tz = null; u.targetCity = null; u.targetFac = null; // R225: new construction replaces a previous facility attack
     this.log(`【야전】${josa(u.label, ['이','가'])} ${josaRo(type)} 건설을 시작했습니다 (금 ${sp.cost}·${sp.turns}턴)`, u.force === this.playerForce);
     return true;
   }
