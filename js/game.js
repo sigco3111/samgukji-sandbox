@@ -1,3 +1,5 @@
+import {debateSnapshot,restoreDebate} from './debate-save.js?v=r200';
+
 import {duelSwapOptions,swapDuelOfficer} from './duel-swap.js?v=r198';
 
 import {duelSnapshot,restoreDuel} from './duel-save.js?v=r197';
@@ -2454,6 +2456,10 @@ produceArms(id,key){const g=this;const c=g.cityById[id],a=this.armsInfo(c,key);i
   
   swapDuelOfficer(d,k,idx) { return swapDuelOfficer.call(this,d,k,idx); }
   
+  debateSnapshot() { return debateSnapshot.call(this); }
+  
+  restoreDebate(raw) { return restoreDebate.call(this,raw); }
+  
 duelSnapshot() { return duelSnapshot.call(this); }
   
   restoreDuel(raw) { return restoreDuel.call(this,raw); }
@@ -2607,7 +2613,9 @@ duelPolicy(d, k) { // AI 방침 (플레이어 위임 시에도 동일 적용)
     return d;
   }
   finishDebate(d) { // 승패 적용: 제의측(a) 승리 시 협상 재심 성공, 패배 시 결렬·관계 -5, 15합 무승부 가능 (자체)
-    d.done = true;
+    if (!d || d.done) return d; // R200: settlement is idempotent
+    
+d.done = true;
     const an = this.officers[d.a.o].name_ko, bn = this.officers[d.b.o].name_ko;
     let w = null;
     if (d.a.hp > 0 && d.b.hp <= 0) w = 'a';
@@ -2665,7 +2673,9 @@ duelPolicy(d, k) { // AI 방침 (플레이어 위임 시에도 동일 적용)
         cities: this.cities, forces: this.forces, units: this.units, nextUnitId: this.nextUnitId, fieldFacs: this.fieldFacs, nextFacId: this.nextFacId,
         playerForce: this.playerForce, delegated: this.delegated, deadAck: this.deadAck, logs: this.logs.slice(-60), diplo: this.diplo, itemPool: this.itemPool, chronicle: this.chronicle, over: this.over, unified: this.unified, // R14
         pendingDiplo: this.pendingDiplo ?? [], // R123: 보류 외교 제안 영속 — reload 후에도 결정 대기 복원 (효과는 resolveDiplo에서만 적용, 복원 시 재적용 없음)
-        pendingDuel: this.duelSnapshot(), // R197: live unit references are encoded as IDs
+        pendingDebate: this.debateSnapshot(),
+        
+pendingDuel: this.duelSnapshot(), // R197: live unit references are encoded as IDs
         
 pendingJoin: this.pendingJoin ?? null, // R128: 참가 요청 영속
         monthlyReview: this.monthlyReview ?? null, reviewBase: this._reviewBase ?? null, // R132: 월 결산 영속 — 턴 경계 전 reload 시 요청 소실 방지 (복원 시 유효성 검증은 로드 경로)
