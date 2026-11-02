@@ -12,6 +12,7 @@ export function swapDuelOfficer(d,k,idx) {
   s.hpMap[old]=s.hp;
   [s.offs[j],s.offs[s.cur]]=[s.offs[s.cur],s.offs[j]];
   s.hp=s.hpMap[idx];
+  d.log=d.log.slice(-100); // Bound repeated UI switches so our own snapshot stays restorable.
   d.log.push(`${this.officers[idx].name_ko} 자유 교체 출전!`);
   return true;
 }
