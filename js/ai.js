@@ -1,5 +1,5 @@
-import {supply} from './arms-policy.js?v=r249';
-import { SHIP_TYPES, TRAPS, FIELD_FACS, SIEGE_TYPES } from './game.js?v=r249';
+import {supply} from './arms-policy.js?v=r250';
+import { SHIP_TYPES, TRAPS, FIELD_FACS, SIEGE_TYPES } from './game.js?v=r250';
 // 세력 AI — 위임 시 플레이어 세력도 이 AI가 운영 (위임·샌드박스의 실질 주체)
 export function aiThink(game, fid, legion = null) { // legion 지정 시 그 군단 소속 도시만 운영 (도독 위임)
   const waiting = game.pendingDebate;
@@ -278,7 +278,7 @@ export function aiThink(game, fid, legion = null) { // legion 지정 시 그 군
       }
       if (bf && game.orderFacAttack(u.id, bf.id)) continue;
     }
-    const foes = game.cities.filter(c => c.force !== fid && (c.force == null || (game.forces[c.force]?.alive && !game.isPeace(fid, c.force))));
+    const foes = enemyCities.filter(c => c.force == null || game.forces[c.force]?.alive); // R250: idle legion units keep the same city/force policy boundary.
     let best = null, bd = 1e9;
     for (const e of foes) { const d = Math.hypot(e.lon - u.x, e.lat - u.z); if (d < bd) { bd = d; best = e; } }
     const homes = cities.slice().sort((a,b) => Math.hypot(a.lon-u.x,a.lat-u.z) - Math.hypot(b.lon-u.x,b.lat-u.z));
