@@ -94,3 +94,9 @@ select { background:#3a3226; color:#e8e0d0; border:1px solid #6b5d43; font-famil
 @media(prefers-reduced-motion:reduce){.contest-hit{animation:none}}
 
 #modal .contest-dialog>*{flex-shrink:0}
+
+/* R248 visible-city facility snapshot. No construction controls here. */
+.city-fac-summary{border:1px solid #655336;background:#251f17;border-radius:6px;padding:9px;margin:10px 0}
+.city-fac-summary summary{cursor:pointer;margin:0 0 7px;color:#e1c785}.city-fac-summary summary small{display:block;color:#c5b99d;font-size:12px;font-weight:normal;margin-top:3px}
+.city-fac-summary ul{margin-top:8px!important;list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
+.city-fac-summary li{display:flex;flex-direction:column;border:1px solid #51442f;padding:5px 7px;min-width:0;overflow-wrap:anywhere;font-size:13px}.city-fac-summary li small{color:#bbb;font-size:11px}.city-fac-summary>p{margin:7px 0 0}

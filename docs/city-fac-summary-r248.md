@@ -1,0 +1,11 @@
+# R248 city facility snapshot - local review
+
+Read-only collapsed facility summary in the existing visible-city panel. Shows counts, grouped type/level/status and construction progress when expanded. No new commands, map picking, ownership rules or engine/save/RNG logic. Existing R139-142 facility models and R216 construction/merge proof are not new work. This is an alternate readable city-panel connection, not a claim that distant models are now legible.
+
+The call is after the existing out-of-vision early return. Actual map clicks from the unchanged R216 turn20 save: direct city8, legion city9 and visible other-force city3 each show one summary; hidden city0 shows none and only the old out-of-vision panel. Delegated view of city0 shows the existing full city panel and summary0/0, with no added construction controls. Existing visibility policy is retained. It is not a complete information-policy audit.
+
+Actual city8 construction click adds a market: city gold5078->4878 and AP40->20, existing engine. Summary6complete/1building0/2; actual turns21->22 show1/2 then7complete/0building while expanded state remains. Turn22 includes an AI diplomatic pending decision, explicitly not a continuous decision-free campaign. Reload save whole string exact, summary starts collapsed. Opening/toggling city panels does not change saved bytes. RNG instrumentation saw one automation UtilityScript call; stack filtering found no game-origin RNG draws from summary reads. Do not claim a global browser Math.random count of zero.
+
+390x844 actual pixels show collapsed header and expanded list; landscape844x390 panel is only139px tall, so vertical scrolling is required. Horizontal panel width358 equals scroll358. This does not fix the existing landscape panel height or phone GPU/touch limits. Same-city re-render retains expansion; selecting another city starts collapsed. No persistent UI preference or save field added.
+
+Pure/source18 assertions and full84/84 suites passed. Source tests do not substitute for runtime boundaries. All source historical saves untouched; separate diagnostic saves store actual construction continuation. Public remains R247 until fixed-byte/PR/deployment/live verification.

@@ -1,21 +1,22 @@
-import {mountAim} from './aim-targets.js?v=r247';
-import {mountBattleReport} from './battle-report.js?v=r247';
-import {overlappingUnits} from './unit-overlap.js?v=r247';
-import {unitNearbyCities} from './unit-city-access.js?v=r247';
-import {unitOrderText} from './unit-order.js?v=r247';
-import {facilityEffectDesc} from './facility-desc.js?v=r247';
-import {mountDebate} from './debate-ui.js?v=r247';
-import {mountDuel} from './duel-ui.js?v=r247';
+import {renderCityFacilitySummary} from './city-fac-summary.js?v=r248';
+import {mountAim} from './aim-targets.js?v=r248';
+import {mountBattleReport} from './battle-report.js?v=r248';
+import {overlappingUnits} from './unit-overlap.js?v=r248';
+import {unitNearbyCities} from './unit-city-access.js?v=r248';
+import {unitOrderText} from './unit-order.js?v=r248';
+import {facilityEffectDesc} from './facility-desc.js?v=r248';
+import {mountDebate} from './debate-ui.js?v=r248';
+import {mountDuel} from './duel-ui.js?v=r248';
 // 진입점: 화면 전환·UI·지도 연결
-import { Map3D, toWorld } from './map3d.js?v=r247';
-import { Game, SAVE_KEY, RULES, forceColor, UNIT_TYPES, ARTS, OFFICES, restoreOfficer, FIELD_FACS, TRAPS, SHIP_TYPES, TAC_SHIP_OK, josa, josaRo, TECH_BRANCHES, TECH_P, TECH_GOLD, TECH_DESC, FACILITIES, ITEMS, SIEGE_BUILD, SHIP_BUILD, ARMS_BUILD, AB_BRANCHES, AB_P, AB_SKILL, AB_PICK } from './game.js?v=r247';
-import { aiThink } from './ai.js?v=r247';
-import { rosterRows, rosterOfficer, rosterRelations } from './officer-roster.js?v=r247';
+import { Map3D, toWorld } from './map3d.js?v=r248';
+import { Game, SAVE_KEY, RULES, forceColor, UNIT_TYPES, ARTS, OFFICES, restoreOfficer, FIELD_FACS, TRAPS, SHIP_TYPES, TAC_SHIP_OK, josa, josaRo, TECH_BRANCHES, TECH_P, TECH_GOLD, TECH_DESC, FACILITIES, ITEMS, SIEGE_BUILD, SHIP_BUILD, ARMS_BUILD, AB_BRANCHES, AB_P, AB_SKILL, AB_PICK } from './game.js?v=r248';
+import { aiThink } from './ai.js?v=r248';
+import { rosterRows, rosterOfficer, rosterRelations } from './officer-roster.js?v=r248';
 
 const $ = id => document.getElementById(id);
 let DATA = null, game = null, map = null, selectedUnit = null, autoTimer = null, pendingFire = null; // R15: 직접 전법·계략 대기
 
-const BUILD_ID = 'r247'; // 빌드 ID (index.html의 meta[name=build]와 같아야 함 - 오래된 캐시된 index와 새 스크립트의 혼합 감지)
+const BUILD_ID = 'r248'; // 빌드 ID (index.html의 meta[name=build]와 같아야 함 - 오래된 캐시된 index와 새 스크립트의 혼합 감지)
 function checkBuildSkew() {
   const idx = document.querySelector('meta[name="build"]')?.content;
   if (idx === BUILD_ID) { sessionStorage.removeItem('cheonha-xi-web.skew'); return; } // 일치하면 재시도 표식 해제
@@ -28,7 +29,7 @@ checkBuildSkew();
 async function loadData() {
   const [officers, skills, portraits, s184, s190, s251] = await Promise.all(
     ['data/officers670.json','data/skills.json','data/portraits.json','data/scenario-184.json','data/scenario-190.json','data/scenario-251.json']
-      .map(u => fetch(u + '?v=r247').then(r => r.json())));
+      .map(u => fetch(u + '?v=r248').then(r => r.json())));
   const byIdx = {};
   for (const o of officers) byIdx[o.idx] = o;
   DATA = { officers: byIdx, skills, portraits, scenarios: { '184': s184, '190': s190, '251': s251 } };
@@ -909,6 +910,8 @@ function domesticUiButton(game, c, id, kind, label) {
   return `<span style="display:inline-flex;flex-direction:column;vertical-align:top;max-width:100%"><button class="cmd" id="${id}"${why ? ` disabled title="${why}"` : ''}>${label}</button>${why ? `<small class="fac-why">${why}</small>` : ''}</span>`;
 }
 function showCityPanel(c) {
+  const sameCity = lastCityId===c.id && $('panel').dataset.view==='city';
+  const facilitiesOpen = sameCity && !!$('panel').querySelector('.city-fac-summary details[open]');
   lastCityId = c.id; $('panel').dataset.view = 'city';
   if (c.force !== game.playerForce && !game.delegated && !game.inVision(c.lon, c.lat)) { // R14: 시야 밖 적 도시 — 상세 정보 비공개
     const p = $('panel'); p.classList.remove('hidden');
@@ -931,6 +934,7 @@ function showCityPanel(c) {
     금 ${c.gold.toLocaleString()} · 병량 ${c.food.toLocaleString()}<br>
     상업 ${c.commerce} · 농업 ${c.farm}${c.metropolis ? ' · 대도시' : ''}${c.specialty.length ? ' · 특색: '+c.specialty.join(',') : ''} · 치안 ${c.security ?? 80}${c.disaster ? ` <span style="color:#f66">재해: ${c.disaster.type}</span>` : ''}<br>
     병장: 창${c.spears} 극${c.pikes} 노${c.bows} 군마${c.horses} · 병기: 충거${c.rams ?? 0} 정란${c.towers ?? 0} 목수${c.beasts ?? 0} 투석${c.catapults ?? 0} · 선박: 주가${c.junks ?? 0} 누선${c.lous ?? 0} 투함${c.dous ?? 0}</p>`;
+  html += renderCityFacilitySummary(c,FACILITIES,facilitiesOpen); // after existing visibility guard, read-only for every visible city
   if (mine) {
     for (const family of ['siege', 'ship']) {
       const ship = family === 'ship', specs = ship ? SHIP_BUILD : SIEGE_BUILD;
