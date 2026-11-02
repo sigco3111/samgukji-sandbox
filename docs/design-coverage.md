@@ -342,3 +342,44 @@ R190 AI수군출진전 기존findPath로 연결된 대상만선택, 도달불가
 
 ## R195 lost-governor command validity
 Captured/free/dead/foreign/missing governors previously retained command and could block manual city orders. New command creation and UI share the serving-status check; existing invalid commands use the existing disband/direct-return notification path on capture, resignation, roster restore, before AI and after extinction. No successor, cost, economic coefficient or recruitment probability change. Thirty-five focused Node checks,43/43 suites and five runtime syntax checks. Nine artificial legion-deployment scenario/seed pairs600turns each:0 invalid-governor snapshots/negative-resource snapshots after fixing the post-AI extinction boundary (first run had1-10 invalid snapshots per pair; not counted as pass). Actual separate-origin fixture/Continue repairs captured Jia Xu60/Dong Zhuo5/Tianshui20 old command and saves it; governor selector29 options excludes captive60. Actual manual development AP100to70, city gold5000to4700/commerce32to40, save and actual reload preserve. Captures034746/034832 show management/direct-control log and manual cost/result; option exclusion is DOM evidence, not every option visible in screenshot. Fixture is artificial, not natural gameplay; no physical-phone, campaign-quality or economic-superiority claim.
+
+## R197~R200 공개 반영 및 R201 로컬 검토 (2026-11-02 14:59)
+
+이 절은 앞선 r144시점 표의 일기토·설전·저장 행을 보완한다. 전체 완료나 완성률 재산정이 아니다.
+
+| 항목 | 현재 구현 및 관측 | 경계 |
+|---|---|---|
+| 일기토 진행 중 저장 | R197: 부대ID를 정본 부대에 재연결하고 논리적 진행상태를 복원. 준비fixture PC1합92/97·투지14/20,390px2합84/94·투지28/40 새로고침 저장전체일치, 자동결착후 재로드 중복없음 | 실폰 아님. 부대없는 손상 저장은 결과적용없이 안내. [상세](duel-save-r197.md) |
+| 기참전 무장 자유교체 | R198: 일기토 내부 순서만 바꾸고 각 무장 체력 보존, 정본 부대명단 불변. PC/390px 여포99→왕윤25→새로고침→여포99 확인 | 미참전 무장 임의선택은 아님. 투지 등 side-wide 상태는 기존규칙 유지. [상세](duel-swap-r198.md) |
+| 일기토 실시간 UI | R199: 약1.2초/합 자체속도, 시작/정지·방침변경·예약필살·정지중교체. PC6합94/72·투지84/114,390px11합89/47·투지178/184와 저장복원.14→15합필살12피해·투지238→158,자동결착후저장일치 | 실제 숨김탭 전환 불가, 숨김 이벤트는 주입17타이머/11UI 검사만. 실폰 아님. 재로드시정지/예약해제. [상세](duel-realtime-r199.md) |
+| 설전 중 저장 및 재결정 | R200: 논리·화술쿨·봉인·로그·협상맥락 저장, 수동/자동결착 저장. PC1합가후90/진궁100·강변쿨2,390px2합가후60/진궁100·도발쿨3·진궁봉인 새로고침전체JSON일치. 승리후설전null·재결정큐1·동맹없음,재로드동일,명시수락후동맹Until25·큐0·재로드동일 | 준비fixture 검증. 자연발생 모든 협상/실폰 미검증. 경제/외교수치·AI 불변. [상세](debate-save-r200.md) |
+| 겹친 필수결정 모달 | R201 로컬만: 일기토→설전→수신외교 단일라우터, 종료/미응답멸망 선택은 그보다 우선. 집중39개·결정마운트18개·종료마운트8개·전체49/49. R200대비9쌍150턴 저장일치 | 미공개·원격변경0. 계정없는 로컬Chrome 실제PC/390에서 일기토우선·6합저장복원·결착후사절·명시수락50→62·재로드일치 확인. 원격정본 대조 전이며 인증유지실패로 공개보류. 이 행은 공개완료로 세지 않음. [상세](decision-order-r201.md) |
+
+공개 근거: [PR105](https://github.com/sigco3111/samgukji-sandbox/pull/105), [PR106](https://github.com/sigco3111/samgukji-sandbox/pull/106), [PR107](https://github.com/sigco3111/samgukji-sandbox/pull/107), [PR108](https://github.com/sigco3111/samgukji-sandbox/pull/108). R200 [Pages 배포](https://github.com/sigco3111/samgukji-sandbox/actions/runs/41394258906) 성공 및 공개6파일 정본 일치를 14:30 확인했다.
+
+잔여: 원기획 전체 통합/장기캠페인 품질, 일기토·설전 연출강화, 실제기기 터치/방향전환/음향/성능, 초상화 외부막힘, R167/R182 별도판단. 원문에 없는 출장·야전등용 확장과 추가 PK콘텐츠는 필수잔여로 새로 넣지 않는다. 좁은 저장/교체/실시간 개선의 완료를 게임전체 완료로 바꾸지 않는다.
+
+## R202 설전 상태전달 로컬 후보
+
+화술 버튼 노드 유지, 사용가능/쿨다운/봉인 사유, 비활성화 후 포커스 이동, 논리막대 접근성 값, 로그 상태영역. 마운트12·소스6·전체50/50·9쌍150턴 저장일치와 로컬ChromePC/390실앱·픽셀 근거는 [상세](debate-ui-r202.md). 규칙/AI변경 없음. 미공개·원격변경0·스크린리더 실제발화/실폰 미검증. 일기토·설전 연출강화 전체를 완료로 올리지 않는다.
+
+## R203 일기토 상태전달 로컬 후보
+기존 비활성 이유·막대 접근성 값·예약버튼 상태·시작/정지 키보드 포커스 보완. DOM26/기존마운트11/소스9/전체51스위트와 로컬Chrome PC1280·390px 실제 Enter 동작·픽셀 확인. 규칙/AI 불변, R202 대비9쌍150턴 저장일치. 미공개·원격0·실폰/실제스크린리더/숨김탭 실전환 미검증. [상세](duel-access-r203.md).
+
+## R204 지도 픽셀비 CSS 크기 결함, 로컬 후보
+R203 실측390×844에서 CSS캔버스가DPR0.5면195×422,DPR2면780×1688로 잘못 변함. CSS width/height100%로 렌더버퍼와분리후두경우390×844. 실제도시클릭/회전후클릭/844×390방향전환후클릭통과,4스크린샷직접검토. DPR2는시험렌더루프500ms제한조건이며물리폰/정상성능근거아님. 소스5/전체52스위트. 미공개·원격0·배포미완. [상세](canvas-sizing-r204.md).
+
+## R204 새184 수동·명부·위임·참가 통합
+새장각남피농업65→72/금3500→3200/AP60→30,명부검색정렬상세게임/디스크불변,실위임중단12턴,원상태저장을다음격리브라우저로이어참가손견16턴/force2/pendingnull,명부13/미방상세·신규이어하기저장전체일치. 참가요청은패널재생성으로DOM버튼click()호출조건이며좌표터치증거아님. 실제3캡처직접검토. seed73 3시나리오1800턴정합0/잔존4·5·5/전부미통일·플레이어대결0과구분. [범위](integration-r204.md).
+
+## R205 자동진행 중 참가 버튼 유지 로컬 후보
+도시정보매턴갱신시참가버튼교체를실제확인. 같은도시/소속노드유지·소속변경새노드·오래된핸들러/위임중단/멸망/자기세력/분리노드차단. DOM10/소스6/전체53. 실제1x마우스누름1.7초자동턴경과후놓기→손견인계21·23턴각실행성공/각전체저장신규이어하기일치. 물리터치/구버전pointer실패완전재현아님. 미공개·원격0.[상세](join-control-r205.md).
+
+## R205 장기저장 복원 연속성 보강
+seed91 184/190/251 각601·1801턴저장6건을main실제복원구간으로로드:전체저장/능력특기적성차이0,동일난수결정30턴후차이0. 모든저장점대결/외교큐없어그경계근거아님.251/1801 실제Chrome이어하기첫저장전체일치→자동진행실중단1813→명부38/가화상세/errors0,390픽셀검토.전부미통일/전략품질보장아님.[범위](long-restore-r205.md).
+
+## R206 월결산 세력 귀속 로컬 후보
+장기멸망190/1801→손견군계속직후240년1월에195년4월조조결산노출발견. 전환2경로결산/기준초기화·새결산fid/제목귀속·구자료보조귀속/미확인표시. 집중7/전체54/구문4.실제멸망선택→손견→결산없음→실턴3→1804손견240년1월기준없음/errors0/390픽셀2장검토. 경제산식변경없음/미공개원격0.[상세](review-owner-r206.md).
+
+## R206 실제환경 한계 점검
+정상RAF/DPR2/390소프트웨어WebGL6간격중앙1166.7ms·p951216.6ms,메뉴클릭확인16.318초로환경한정느림관측. 실기기성능통과아님. headed/백그라운드방지옵션제외/Ctrl+T및OS키입력경로도hiddenfalse·이벤트0으로실제숨김재현불가. 주입게이트와구분·동일재시도중단.[조건](environment-limits-r206.md).
