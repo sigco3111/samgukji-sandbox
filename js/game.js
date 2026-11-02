@@ -2642,6 +2642,7 @@ d.done = true;
   }
   debateAuto(d) { let guard = 0; while (d && !d.done && guard++ < 100) this.debateTick(d, this.debatePolicy(d, 'a'), this.debatePolicy(d, 'b')); }
   tryDebate(ctx) { // 협상 결렬 시 30% 설전 발동 (자체 확률). 제의측 지력 최고 무장 vs 상대측 지력 최고 무장 (등용은 사자 vs 대상 무장)
+    if (this.pendingDebate) return false; // R210: 이미 대기 중인 유료 설전을 새 사건으로 덮지 않음
     const c = this.cityById[ctx.cityId];
     let aIdx = null, bIdx = null;
     if (ctx.kind === 'recruit') {
