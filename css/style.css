@@ -68,3 +68,9 @@ select { background:#3a3226; color:#e8e0d0; border:1px solid #6b5d43; font-famil
 
 /* R145 스크롤 패널 바깥 배경 paint 경계 */
 #panel { clip-path:inset(0 round 6px 0 0 6px); }
+
+/* R217: result feedback, no engine timing or state changes. */
+.contest-fighters { text-align:center; padding:6px 0; background:linear-gradient(90deg,transparent,#453627,transparent); border-radius:6px; }
+.contest-feedback { color:#ffe3a0; background:#31291d; border:1px solid #6f5b38; border-radius:6px; padding:7px; margin:2px 0; min-height:2.4em; line-height:1.4; font-size:13px; overflow-wrap:anywhere; }
+.contest-fighters span { box-shadow:0 2px 6px #0008; }
+@media(max-width:480px){.contest-feedback{font-size:12px}.contest-fighters{padding:4px 0}}
