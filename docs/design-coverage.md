@@ -389,3 +389,6 @@ Natural190SunJian24 siege save exposed selfunit hiding citytarget at cameraangle
 
 ## R208 neutral-only military target candidate
 Existingeligibleordinarytarget and threateneddefence remain. If neitherapplies, search onlyreachable eligible neutralcities within existinglegiontargetfilters. Firstnaturalsnapshot baseline0orders/candidate3000spear→Jinyang withsameRNG/costs. Focused16/full56suites,9continued120turninvariant0,390actualdelegation/stop1812Jinyangforce21/5850/4canonicalofficers, wholeSaveexactactualContinue/errors0. Commandownerfixture disclosed, capture1805 is seededengineevidence not screenshot. Nooverallstrategy/unification/realphoneclaim. Localunpublished. [Scope](neutral-target-r208.md).
+
+## R209 natural cavalry return waypoint candidate
+Actual190MaTeng manual cavalry approach/charge/return exposed repeated last-waypoint overshoot atturn13. Clamp existingstep to remainingdistance only. Baseline8steps fail; candidate actualContinue→turn14arrive→15merge1872troops/officers515+558once/errors0. Focused99 includes9landtypes×8speed/terrainmodes exactR208 long-step comparison,3navalpolylines,offensiveengagement/confusion; full57suites/syntax2. Naturalplayerduel didnotoccur. [Scope](waypoint-return-r209.md). Localunpublished; noAI/economyretuning/physicalphoneclaim.
