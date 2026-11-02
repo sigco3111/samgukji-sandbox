@@ -1,5 +1,5 @@
-import {supply} from './arms-policy.js?v=r207';
-import { SHIP_TYPES, TRAPS, FIELD_FACS, SIEGE_TYPES } from './game.js?v=r207';
+import {supply} from './arms-policy.js?v=r208';
+import { SHIP_TYPES, TRAPS, FIELD_FACS, SIEGE_TYPES } from './game.js?v=r208';
 // 세력 AI — 위임 시 플레이어 세력도 이 AI가 운영 (위임·샌드박스의 실질 주체)
 export function aiThink(game, fid, legion = null) { // legion 지정 시 그 군단 소속 도시만 운영 (도독 위임)
   const f = game.forces[fid];
@@ -193,6 +193,15 @@ export function aiThink(game, fid, legion = null) { // legion 지정 시 그 군
     }
     if (!best) continue;
     const threatened = game.units.some(u => u.force !== fid && u.targetCity === c.id);
+    // R208: a stronger nearest enemy must not hide an eligible neutral city.
+    // Keep threatened defence and legion target filters unchanged.
+    if (!threatened && !(c.troops > Math.max(best.troops * 1.5, 6000) && bd < 12)) {
+      const neutral = enemyCities.filter(e => e.force == null && c.troops > Math.max(e.troops * 1.5, 6000) && Math.hypot(e.lon-c.lon,e.lat-c.lat)<12)
+        .sort((a,b) => Math.hypot(a.lon-c.lon,a.lat-c.lat)-Math.hypot(b.lon-c.lon,b.lat-c.lat));
+      const probe = { force: fid, type: 'sword', x: c.lon, z: c.lat };
+      const next = neutral.find(e => game.findPath(probe,e.lon,e.lat));
+      if (next) { best=next; bd=Math.hypot(best.lon-c.lon,best.lat-c.lat); }
+    }
     const threshold = Math.max(best.troops * 1.5, 6000);
     if ((c.troops > threshold && bd < 12) || (threatened && c.troops > 4000)) {
       // 출진
