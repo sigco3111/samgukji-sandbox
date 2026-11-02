@@ -1,0 +1,8 @@
+# R227 overlapping-unit access (local candidate)
+Public baselineR226. Current natural-history continuation1822 has3951XuZhu1720/3960GuoSi1841/new3964DengXian7000 at exactly112.36/32.5. Normal map center selection repeatedly picks3951. R226 nearby-city navigation resolved city entry only.
+
+Candidate adds explicit links from a unit panel to other units within0.05 world distance. This is a fixed near-coincident threshold, not a complete screen-marker overlap detector. Revalidate source, target and current distance before switch; clear pending aim and select canonical target unit. No map pick priority, command authorization, simulation, save or cost changes. Enemy/bandit/delegated unit information uses existing panel mine checks.
+
+Actual isolated390px UI: existing3951 panel -> explicit3964 link -> DengXian7000 panel; navigation saved string unchanged. Actual city click then sets only3964 targetCity29/path1. Real reload full saved string exact/errors0. Screenshot directly inspected:1822/DengXian7000/food16800 and XuZhu1720/GuoSi1841 links. Target/path/order correctness is execution-data evidence, not that pre-order screenshot alone.
+
+Nine pure cases +2 wiring assertions;32 mounted DOM cases cover same/foreign/bandit/delegated, no self/far, canonical target/pending aim clear, back switch, command-guidance preservation, removed/moved source/target and no game mutation.72/72 full suites. Prepared transfer of natural-history save, no resource/stat/enemy/RNG edits. No defended-city capture, general all-zoom overlap fix, physical-phone, strategy-quality or whole-game completion claim. Original saves untouched. No PR/merge/deployment yet.
