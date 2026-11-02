@@ -1,19 +1,19 @@
-import {overlappingUnits} from './unit-overlap.js?v=r228';
-import {unitNearbyCities} from './unit-city-access.js?v=r228';
-import {unitOrderText} from './unit-order.js?v=r228';
-import {facilityEffectDesc} from './facility-desc.js?v=r228';
-import {mountDebate} from './debate-ui.js?v=r228';
-import {mountDuel} from './duel-ui.js?v=r228';
+import {overlappingUnits} from './unit-overlap.js?v=r229';
+import {unitNearbyCities} from './unit-city-access.js?v=r229';
+import {unitOrderText} from './unit-order.js?v=r229';
+import {facilityEffectDesc} from './facility-desc.js?v=r229';
+import {mountDebate} from './debate-ui.js?v=r229';
+import {mountDuel} from './duel-ui.js?v=r229';
 // 진입점: 화면 전환·UI·지도 연결
-import { Map3D, toWorld } from './map3d.js?v=r228';
-import { Game, SAVE_KEY, RULES, forceColor, UNIT_TYPES, ARTS, OFFICES, restoreOfficer, FIELD_FACS, TRAPS, SHIP_TYPES, TAC_SHIP_OK, josa, josaRo, TECH_BRANCHES, TECH_P, TECH_GOLD, TECH_DESC, FACILITIES, ITEMS, SIEGE_BUILD, SHIP_BUILD, ARMS_BUILD, AB_BRANCHES, AB_P, AB_SKILL, AB_PICK } from './game.js?v=r228';
-import { aiThink } from './ai.js?v=r228';
-import { rosterRows, rosterOfficer, rosterRelations } from './officer-roster.js?v=r228';
+import { Map3D, toWorld } from './map3d.js?v=r229';
+import { Game, SAVE_KEY, RULES, forceColor, UNIT_TYPES, ARTS, OFFICES, restoreOfficer, FIELD_FACS, TRAPS, SHIP_TYPES, TAC_SHIP_OK, josa, josaRo, TECH_BRANCHES, TECH_P, TECH_GOLD, TECH_DESC, FACILITIES, ITEMS, SIEGE_BUILD, SHIP_BUILD, ARMS_BUILD, AB_BRANCHES, AB_P, AB_SKILL, AB_PICK } from './game.js?v=r229';
+import { aiThink } from './ai.js?v=r229';
+import { rosterRows, rosterOfficer, rosterRelations } from './officer-roster.js?v=r229';
 
 const $ = id => document.getElementById(id);
 let DATA = null, game = null, map = null, selectedUnit = null, autoTimer = null, pendingFire = null; // R15: 직접 전법·계략 대기
 
-const BUILD_ID = 'r228'; // 빌드 ID (index.html의 meta[name=build]와 같아야 함 - 오래된 캐시된 index와 새 스크립트의 혼합 감지)
+const BUILD_ID = 'r229'; // 빌드 ID (index.html의 meta[name=build]와 같아야 함 - 오래된 캐시된 index와 새 스크립트의 혼합 감지)
 function checkBuildSkew() {
   const idx = document.querySelector('meta[name="build"]')?.content;
   if (idx === BUILD_ID) { sessionStorage.removeItem('cheonha-xi-web.skew'); return; } // 일치하면 재시도 표식 해제
@@ -26,7 +26,7 @@ checkBuildSkew();
 async function loadData() {
   const [officers, skills, portraits, s184, s190, s251] = await Promise.all(
     ['data/officers670.json','data/skills.json','data/portraits.json','data/scenario-184.json','data/scenario-190.json','data/scenario-251.json']
-      .map(u => fetch(u + '?v=r228').then(r => r.json())));
+      .map(u => fetch(u + '?v=r229').then(r => r.json())));
   const byIdx = {};
   for (const o of officers) byIdx[o.idx] = o;
   DATA = { officers: byIdx, skills, portraits, scenarios: { '184': s184, '190': s190, '251': s251 } };
@@ -1151,8 +1151,12 @@ function showMove(c) {
 }
 function showUnitPanel(uid) {
   $('panel').dataset.view = 'unit';
-  const u = game.units.find(x => x.id === uid); if (!u) return;
-  const p = $('panel'); p.classList.remove('hidden');
+  const u = game.units.find(x => x.id === uid);
+  const p = $('panel');
+  if (!u || (!game.delegated && u.force !== game.playerForce && !game.inVision(u.x, u.z))) { // R229: open enemy panel cannot follow units beyond current vision
+    p.classList.add('hidden'); p.replaceChildren(); selectedUnit = null; pendingFire = null; return;
+  }
+  p.classList.remove('hidden');
   // R112: 시설 소화 (매뉴얼 消火) — 템플릿 내 up-douse-f 행 참조
   const mine = u.force === game.playerForce && !game.delegated;
   p.innerHTML = `<h3>${u.label} (${UNIT_TYPES[u.type].name})</h3>
