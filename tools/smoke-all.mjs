@@ -2,6 +2,7 @@
 // 실행: node tools/smoke-all.mjs (repo 루트에서)
 import { spawnSync } from 'child_process';
 const SUITES = [
+ 'tools/smoke-r199-clock.mjs',
  'tools/smoke-r198-duelswap.mjs',
  'tools/smoke-r197-duelsave.mjs',
  'tools/smoke-r196-roster.mjs',
