@@ -1,3 +1,5 @@
+import {debateSnapshot,restoreDebate} from './debate-save.js?v=r200';
+
 import {duelSwapOptions,swapDuelOfficer} from './duel-swap.js?v=r198';
 
 import {duelSnapshot,restoreDuel} from './duel-save.js?v=r197';
