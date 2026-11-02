@@ -1,0 +1,2107 @@
+[
+  {
+    "sid": 184,
+    "seed": 42,
+    "policy": "delegate",
+    "fid": 2,
+    "startHome": 8,
+    "targetCity": 9,
+    "targetForce": 28,
+    "turn": 181,
+    "alive": true,
+    "captures": [
+      {
+        "turn": 12,
+        "city": 9,
+        "from": 28
+      },
+      {
+        "turn": 14,
+        "city": 10,
+        "from": null
+      }
+    ],
+    "events": [
+      {
+        "turn": 5,
+        "kind": "dispatch",
+        "home": 8,
+        "id": 10,
+        "force": 2,
+        "troops": 20000,
+        "food": 48000
+      },
+      {
+        "turn": 5,
+        "kind": "order",
+        "id": 10,
+        "to": 9,
+        "owner": 28,
+        "legionActing": true,
+        "troops": 20000,
+        "food": 48000,
+        "siegeAge": 0,
+        "targetTroops": 13000,
+        "stack": [
+          "    at g.orderUnit (file://tools/study-r216-legion.mjs:2:1455)",
+          "    at aiThink (file://js/ai.js:225:26)",
+          "    at Game.endTurn (file://js/game.js:1537:74)"
+        ]
+      },
+      {
+        "turn": 8,
+        "kind": "dispatch",
+        "home": 8,
+        "id": 16,
+        "force": 2,
+        "troops": 3000,
+        "food": 7200
+      },
+      {
+        "turn": 8,
+        "kind": "order",
+        "id": 16,
+        "to": 10,
+        "owner": null,
+        "legionActing": true,
+        "troops": 3000,
+        "food": 7200,
+        "siegeAge": 0,
+        "targetTroops": 0,
+        "stack": [
+          "    at g.orderUnit (file://tools/study-r216-legion.mjs:2:1455)",
+          "    at aiThink (file://js/ai.js:225:26)",
+          "    at Game.endTurn (file://js/game.js:1537:74)"
+        ]
+      },
+      {
+        "turn": 9,
+        "kind": "dispatch",
+        "home": 8,
+        "id": 17,
+        "force": 2,
+        "troops": 3000,
+        "food": 7200
+      },
+      {
+        "turn": 9,
+        "kind": "order",
+        "id": 17,
+        "to": 10,
+        "owner": null,
+        "legionActing": true,
+        "troops": 3000,
+        "food": 7200,
+        "siegeAge": 0,
+        "targetTroops": 0,
+        "stack": [
+          "    at g.orderUnit (file://tools/study-r216-legion.mjs:2:1455)",
+          "    at aiThink (file://js/ai.js:225:26)",
+          "    at Game.endTurn (file://js/game.js:1537:74)"
+        ]
+      }
+    ],
+    "observations": [
+      {
+        "turn": 2,
+        "home": {
+          "force": 2,
+          "troops": 32000,
+          "food": 90000,
+          "gold": 4400,
+          "officers": 9
+        },
+        "target": {
+          "force": 28,
+          "troops": 13000
+        },
+        "ap": 20,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 30,
+        "home": {
+          "force": 2,
+          "troops": 6000,
+          "food": 16950,
+          "gold": 5687,
+          "officers": 8
+        },
+        "target": {
+          "force": 2,
+          "troops": 23142
+        },
+        "ap": 30,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 60,
+        "home": {
+          "force": 2,
+          "troops": 6000,
+          "food": 34450,
+          "gold": 13214,
+          "officers": 10
+        },
+        "target": {
+          "force": 2,
+          "troops": 3937
+        },
+        "ap": 255,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 90,
+        "home": {
+          "force": 2,
+          "troops": 6000,
+          "food": 41575,
+          "gold": 25134,
+          "officers": 10
+        },
+        "target": {
+          "force": 2,
+          "troops": 3937
+        },
+        "ap": 255,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 118,
+        "home": {
+          "force": 2,
+          "troops": 6000,
+          "food": 48700,
+          "gold": 37054,
+          "officers": 10
+        },
+        "target": {
+          "force": 2,
+          "troops": 3937
+        },
+        "ap": 255,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 119,
+        "home": {
+          "force": 2,
+          "troops": 6000,
+          "food": 48700,
+          "gold": 37054,
+          "officers": 10
+        },
+        "target": {
+          "force": 2,
+          "troops": 3937
+        },
+        "ap": 255,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 134,
+        "home": {
+          "force": 2,
+          "troops": 6000,
+          "food": 57450,
+          "gold": 42779,
+          "officers": 11
+        },
+        "target": {
+          "force": 2,
+          "troops": 3937
+        },
+        "ap": 255,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 150,
+        "home": {
+          "force": 2,
+          "troops": 6000,
+          "food": 66200,
+          "gold": 48564,
+          "officers": 11
+        },
+        "target": {
+          "force": 2,
+          "troops": 3937
+        },
+        "ap": 255,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 180,
+        "home": {
+          "force": 2,
+          "troops": 6000,
+          "food": 73325,
+          "gold": 60134,
+          "officers": 11
+        },
+        "target": {
+          "force": 2,
+          "troops": 2999
+        },
+        "ap": 255,
+        "threatened": false,
+        "units": []
+      }
+    ],
+    "bad": 0,
+    "decisions": {
+      "duel": 0,
+      "debate": 2,
+      "diplo": 0
+    }
+  },
+  {
+    "sid": 184,
+    "seed": 42,
+    "policy": "attack_city",
+    "fid": 2,
+    "startHome": 8,
+    "targetCity": 9,
+    "targetForce": 28,
+    "turn": 181,
+    "alive": true,
+    "captures": [
+      {
+        "turn": 12,
+        "city": 9,
+        "from": 28
+      }
+    ],
+    "events": [
+      {
+        "turn": 5,
+        "kind": "dispatch",
+        "home": 8,
+        "id": 10,
+        "force": 2,
+        "troops": 20000,
+        "food": 48000
+      },
+      {
+        "turn": 5,
+        "kind": "order",
+        "id": 10,
+        "to": 9,
+        "owner": 28,
+        "legionActing": true,
+        "troops": 20000,
+        "food": 48000,
+        "siegeAge": 0,
+        "targetTroops": 13000,
+        "stack": [
+          "    at g.orderUnit (file://tools/study-r216-legion.mjs:2:1455)",
+          "    at aiThink (file://js/ai.js:225:26)",
+          "    at Game.endTurn (file://js/game.js:1537:74)"
+        ]
+      },
+      {
+        "turn": 10,
+        "kind": "dispatch",
+        "home": 8,
+        "id": 16,
+        "force": 2,
+        "troops": 9000,
+        "food": 16243
+      },
+      {
+        "turn": 10,
+        "kind": "order",
+        "id": 16,
+        "to": 9,
+        "owner": 28,
+        "legionActing": true,
+        "troops": 9000,
+        "food": 16243,
+        "siegeAge": 0,
+        "targetTroops": 7939,
+        "stack": [
+          "    at g.orderUnit (file://tools/study-r216-legion.mjs:2:1455)",
+          "    at aiThink (file://js/ai.js:225:26)",
+          "    at Game.endTurn (file://js/game.js:1537:74)"
+        ]
+      }
+    ],
+    "observations": [
+      {
+        "turn": 2,
+        "home": {
+          "force": 2,
+          "troops": 32000,
+          "food": 90000,
+          "gold": 4400,
+          "officers": 9
+        },
+        "target": {
+          "force": 28,
+          "troops": 13000
+        },
+        "ap": 20,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 30,
+        "home": {
+          "force": 2,
+          "troops": 3000,
+          "food": 10393,
+          "gold": 4799,
+          "officers": 14
+        },
+        "target": {
+          "force": 2,
+          "troops": 32142
+        },
+        "ap": 90,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 60,
+        "home": {
+          "force": 2,
+          "troops": 3000,
+          "food": 39893,
+          "gold": 10435,
+          "officers": 15
+        },
+        "target": {
+          "force": 2,
+          "troops": 3975
+        },
+        "ap": 255,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 90,
+        "home": {
+          "force": 2,
+          "troops": 3000,
+          "food": 59018,
+          "gold": 20235,
+          "officers": 15
+        },
+        "target": {
+          "force": 2,
+          "troops": 3975
+        },
+        "ap": 255,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 118,
+        "home": {
+          "force": 2,
+          "troops": 3000,
+          "food": 78143,
+          "gold": 30035,
+          "officers": 15
+        },
+        "target": {
+          "force": 2,
+          "troops": 3587
+        },
+        "ap": 255,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 119,
+        "home": {
+          "force": 2,
+          "troops": 3000,
+          "food": 78143,
+          "gold": 30035,
+          "officers": 15
+        },
+        "target": {
+          "force": 2,
+          "troops": 3587
+        },
+        "ap": 255,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 134,
+        "home": {
+          "force": 2,
+          "troops": 3000,
+          "food": 92893,
+          "gold": 34535,
+          "officers": 15
+        },
+        "target": {
+          "force": 2,
+          "troops": 3587
+        },
+        "ap": 235,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 150,
+        "home": {
+          "force": 2,
+          "troops": 3000,
+          "food": 107643,
+          "gold": 39080,
+          "officers": 16
+        },
+        "target": {
+          "force": 2,
+          "troops": 3587
+        },
+        "ap": 255,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 180,
+        "home": {
+          "force": 2,
+          "troops": 2708,
+          "food": 105089,
+          "gold": 39629,
+          "officers": 16
+        },
+        "target": {
+          "force": 2,
+          "troops": 3111
+        },
+        "ap": 255,
+        "threatened": false,
+        "units": []
+      }
+    ],
+    "bad": 0,
+    "decisions": {
+      "duel": 0,
+      "debate": 2,
+      "diplo": 0
+    }
+  },
+  {
+    "sid": 184,
+    "seed": 42,
+    "policy": "attack_force",
+    "fid": 2,
+    "startHome": 8,
+    "targetCity": 9,
+    "targetForce": 28,
+    "turn": 181,
+    "alive": true,
+    "captures": [
+      {
+        "turn": 12,
+        "city": 9,
+        "from": 28
+      }
+    ],
+    "events": [
+      {
+        "turn": 5,
+        "kind": "dispatch",
+        "home": 8,
+        "id": 10,
+        "force": 2,
+        "troops": 20000,
+        "food": 48000
+      },
+      {
+        "turn": 5,
+        "kind": "order",
+        "id": 10,
+        "to": 9,
+        "owner": 28,
+        "legionActing": true,
+        "troops": 20000,
+        "food": 48000,
+        "siegeAge": 0,
+        "targetTroops": 13000,
+        "stack": [
+          "    at g.orderUnit (file://tools/study-r216-legion.mjs:2:1455)",
+          "    at aiThink (file://js/ai.js:225:26)",
+          "    at Game.endTurn (file://js/game.js:1537:74)"
+        ]
+      },
+      {
+        "turn": 10,
+        "kind": "dispatch",
+        "home": 8,
+        "id": 16,
+        "force": 2,
+        "troops": 9000,
+        "food": 16243
+      },
+      {
+        "turn": 10,
+        "kind": "order",
+        "id": 16,
+        "to": 9,
+        "owner": 28,
+        "legionActing": true,
+        "troops": 9000,
+        "food": 16243,
+        "siegeAge": 0,
+        "targetTroops": 7939,
+        "stack": [
+          "    at g.orderUnit (file://tools/study-r216-legion.mjs:2:1455)",
+          "    at aiThink (file://js/ai.js:225:26)",
+          "    at Game.endTurn (file://js/game.js:1537:74)"
+        ]
+      }
+    ],
+    "observations": [
+      {
+        "turn": 2,
+        "home": {
+          "force": 2,
+          "troops": 32000,
+          "food": 90000,
+          "gold": 4400,
+          "officers": 9
+        },
+        "target": {
+          "force": 28,
+          "troops": 13000
+        },
+        "ap": 20,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 30,
+        "home": {
+          "force": 2,
+          "troops": 3000,
+          "food": 10393,
+          "gold": 4799,
+          "officers": 14
+        },
+        "target": {
+          "force": 2,
+          "troops": 32142
+        },
+        "ap": 90,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 60,
+        "home": {
+          "force": 2,
+          "troops": 3000,
+          "food": 39893,
+          "gold": 10435,
+          "officers": 15
+        },
+        "target": {
+          "force": 2,
+          "troops": 3975
+        },
+        "ap": 255,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 90,
+        "home": {
+          "force": 2,
+          "troops": 3000,
+          "food": 59018,
+          "gold": 20235,
+          "officers": 15
+        },
+        "target": {
+          "force": 2,
+          "troops": 3975
+        },
+        "ap": 255,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 118,
+        "home": {
+          "force": 2,
+          "troops": 3000,
+          "food": 78143,
+          "gold": 30035,
+          "officers": 15
+        },
+        "target": {
+          "force": 2,
+          "troops": 3587
+        },
+        "ap": 255,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 119,
+        "home": {
+          "force": 2,
+          "troops": 3000,
+          "food": 78143,
+          "gold": 30035,
+          "officers": 15
+        },
+        "target": {
+          "force": 2,
+          "troops": 3587
+        },
+        "ap": 255,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 134,
+        "home": {
+          "force": 2,
+          "troops": 3000,
+          "food": 92893,
+          "gold": 34535,
+          "officers": 15
+        },
+        "target": {
+          "force": 2,
+          "troops": 3587
+        },
+        "ap": 235,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 150,
+        "home": {
+          "force": 2,
+          "troops": 3000,
+          "food": 107643,
+          "gold": 39080,
+          "officers": 16
+        },
+        "target": {
+          "force": 2,
+          "troops": 3587
+        },
+        "ap": 255,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 180,
+        "home": {
+          "force": 2,
+          "troops": 2708,
+          "food": 105089,
+          "gold": 39629,
+          "officers": 16
+        },
+        "target": {
+          "force": 2,
+          "troops": 3111
+        },
+        "ap": 255,
+        "threatened": false,
+        "units": []
+      }
+    ],
+    "bad": 0,
+    "decisions": {
+      "duel": 0,
+      "debate": 2,
+      "diplo": 0
+    }
+  },
+  {
+    "sid": 190,
+    "seed": 42,
+    "policy": "delegate",
+    "fid": 0,
+    "startHome": 12,
+    "targetCity": 11,
+    "targetForce": 17,
+    "turn": 181,
+    "alive": false,
+    "captures": [
+      {
+        "turn": 45,
+        "city": 11,
+        "from": 17
+      }
+    ],
+    "events": [
+      {
+        "turn": 3,
+        "kind": "dispatch",
+        "home": 12,
+        "id": 9,
+        "force": 0,
+        "troops": 19000,
+        "food": 45600
+      },
+      {
+        "turn": 3,
+        "kind": "order",
+        "id": 9,
+        "to": 11,
+        "owner": 17,
+        "legionActing": true,
+        "troops": 19000,
+        "food": 45600,
+        "siegeAge": 0,
+        "targetTroops": 10827,
+        "stack": [
+          "    at g.orderUnit (file://tools/study-r216-legion.mjs:2:1455)",
+          "    at aiThink (file://js/ai.js:225:26)",
+          "    at Game.endTurn (file://js/game.js:1537:74)"
+        ]
+      }
+    ],
+    "observations": [
+      {
+        "turn": 2,
+        "home": {
+          "force": 0,
+          "troops": 22000,
+          "food": 60000,
+          "gold": 2900,
+          "officers": 15
+        },
+        "target": {
+          "force": 17,
+          "troops": 13000
+        },
+        "ap": 20,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 30,
+        "home": {
+          "force": 0,
+          "troops": 3000,
+          "food": 16718,
+          "gold": 1212,
+          "officers": 19
+        },
+        "target": {
+          "force": 17,
+          "troops": 4992
+        },
+        "ap": 200,
+        "threatened": false,
+        "units": [
+          {
+            "id": 9,
+            "troops": 6447,
+            "food": 15279,
+            "target": 11
+          }
+        ]
+      },
+      {
+        "turn": 60,
+        "home": {
+          "force": 0,
+          "troops": 3000,
+          "food": 41832,
+          "gold": 1807,
+          "officers": 25
+        },
+        "target": {
+          "force": 0,
+          "troops": 3579
+        },
+        "ap": 255,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 90,
+        "home": {
+          "force": 0,
+          "troops": 3000,
+          "food": 60957,
+          "gold": 2019,
+          "officers": 28
+        },
+        "target": {
+          "force": 11,
+          "troops": 3255
+        },
+        "ap": 255,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 118,
+        "home": {
+          "force": 11,
+          "troops": 3000,
+          "food": 89400,
+          "gold": 2762,
+          "officers": 1
+        },
+        "target": {
+          "force": 11,
+          "troops": 3255
+        },
+        "ap": 255,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 119,
+        "home": {
+          "force": 11,
+          "troops": 3000,
+          "food": 89400,
+          "gold": 2662,
+          "officers": 1
+        },
+        "target": {
+          "force": 11,
+          "troops": 3255
+        },
+        "ap": 255,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 134,
+        "home": {
+          "force": 11,
+          "troops": 3000,
+          "food": 101839,
+          "gold": 4316,
+          "officers": 1
+        },
+        "target": {
+          "force": 11,
+          "troops": 3000
+        },
+        "ap": 255,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 150,
+        "home": {
+          "force": 11,
+          "troops": 2708,
+          "food": 91373,
+          "gold": 5660,
+          "officers": 1
+        },
+        "target": {
+          "force": 11,
+          "troops": 6900
+        },
+        "ap": 255,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 180,
+        "home": {
+          "force": 11,
+          "troops": 6900,
+          "food": 97328,
+          "gold": 11788,
+          "officers": 0
+        },
+        "target": {
+          "force": 11,
+          "troops": 7563
+        },
+        "ap": 255,
+        "threatened": false,
+        "units": []
+      }
+    ],
+    "bad": 0,
+    "decisions": {
+      "duel": 3,
+      "debate": 3,
+      "diplo": 0
+    }
+  },
+  {
+    "sid": 190,
+    "seed": 42,
+    "policy": "attack_city",
+    "fid": 0,
+    "startHome": 12,
+    "targetCity": 11,
+    "targetForce": 17,
+    "turn": 181,
+    "alive": false,
+    "captures": [
+      {
+        "turn": 45,
+        "city": 11,
+        "from": 17
+      }
+    ],
+    "events": [
+      {
+        "turn": 3,
+        "kind": "dispatch",
+        "home": 12,
+        "id": 9,
+        "force": 0,
+        "troops": 19000,
+        "food": 45600
+      },
+      {
+        "turn": 3,
+        "kind": "order",
+        "id": 9,
+        "to": 11,
+        "owner": 17,
+        "legionActing": true,
+        "troops": 19000,
+        "food": 45600,
+        "siegeAge": 0,
+        "targetTroops": 10827,
+        "stack": [
+          "    at g.orderUnit (file://tools/study-r216-legion.mjs:2:1455)",
+          "    at aiThink (file://js/ai.js:225:26)",
+          "    at Game.endTurn (file://js/game.js:1537:74)"
+        ]
+      }
+    ],
+    "observations": [
+      {
+        "turn": 2,
+        "home": {
+          "force": 0,
+          "troops": 22000,
+          "food": 60000,
+          "gold": 2900,
+          "officers": 15
+        },
+        "target": {
+          "force": 17,
+          "troops": 13000
+        },
+        "ap": 20,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 30,
+        "home": {
+          "force": 0,
+          "troops": 3000,
+          "food": 16718,
+          "gold": 1212,
+          "officers": 19
+        },
+        "target": {
+          "force": 17,
+          "troops": 4992
+        },
+        "ap": 200,
+        "threatened": false,
+        "units": [
+          {
+            "id": 9,
+            "troops": 6447,
+            "food": 15279,
+            "target": 11
+          }
+        ]
+      },
+      {
+        "turn": 60,
+        "home": {
+          "force": 0,
+          "troops": 3000,
+          "food": 41832,
+          "gold": 1807,
+          "officers": 25
+        },
+        "target": {
+          "force": 0,
+          "troops": 3579
+        },
+        "ap": 255,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 90,
+        "home": {
+          "force": 0,
+          "troops": 3000,
+          "food": 60957,
+          "gold": 2019,
+          "officers": 28
+        },
+        "target": {
+          "force": 11,
+          "troops": 3255
+        },
+        "ap": 255,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 118,
+        "home": {
+          "force": 11,
+          "troops": 3000,
+          "food": 89400,
+          "gold": 2762,
+          "officers": 1
+        },
+        "target": {
+          "force": 11,
+          "troops": 3255
+        },
+        "ap": 255,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 119,
+        "home": {
+          "force": 11,
+          "troops": 3000,
+          "food": 89400,
+          "gold": 2662,
+          "officers": 1
+        },
+        "target": {
+          "force": 11,
+          "troops": 3255
+        },
+        "ap": 255,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 134,
+        "home": {
+          "force": 11,
+          "troops": 3000,
+          "food": 101839,
+          "gold": 4316,
+          "officers": 1
+        },
+        "target": {
+          "force": 11,
+          "troops": 3000
+        },
+        "ap": 255,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 150,
+        "home": {
+          "force": 11,
+          "troops": 2708,
+          "food": 91373,
+          "gold": 5660,
+          "officers": 1
+        },
+        "target": {
+          "force": 11,
+          "troops": 6900
+        },
+        "ap": 255,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 180,
+        "home": {
+          "force": 11,
+          "troops": 6900,
+          "food": 97328,
+          "gold": 11788,
+          "officers": 0
+        },
+        "target": {
+          "force": 11,
+          "troops": 7563
+        },
+        "ap": 255,
+        "threatened": false,
+        "units": []
+      }
+    ],
+    "bad": 0,
+    "decisions": {
+      "duel": 3,
+      "debate": 3,
+      "diplo": 0
+    }
+  },
+  {
+    "sid": 190,
+    "seed": 42,
+    "policy": "attack_force",
+    "fid": 0,
+    "startHome": 12,
+    "targetCity": 11,
+    "targetForce": 17,
+    "turn": 181,
+    "alive": false,
+    "captures": [
+      {
+        "turn": 45,
+        "city": 11,
+        "from": 17
+      }
+    ],
+    "events": [
+      {
+        "turn": 3,
+        "kind": "dispatch",
+        "home": 12,
+        "id": 9,
+        "force": 0,
+        "troops": 19000,
+        "food": 45600
+      },
+      {
+        "turn": 3,
+        "kind": "order",
+        "id": 9,
+        "to": 11,
+        "owner": 17,
+        "legionActing": true,
+        "troops": 19000,
+        "food": 45600,
+        "siegeAge": 0,
+        "targetTroops": 10827,
+        "stack": [
+          "    at g.orderUnit (file://tools/study-r216-legion.mjs:2:1455)",
+          "    at aiThink (file://js/ai.js:225:26)",
+          "    at Game.endTurn (file://js/game.js:1537:74)"
+        ]
+      }
+    ],
+    "observations": [
+      {
+        "turn": 2,
+        "home": {
+          "force": 0,
+          "troops": 22000,
+          "food": 60000,
+          "gold": 2900,
+          "officers": 15
+        },
+        "target": {
+          "force": 17,
+          "troops": 13000
+        },
+        "ap": 20,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 30,
+        "home": {
+          "force": 0,
+          "troops": 3000,
+          "food": 16718,
+          "gold": 1212,
+          "officers": 19
+        },
+        "target": {
+          "force": 17,
+          "troops": 4992
+        },
+        "ap": 200,
+        "threatened": false,
+        "units": [
+          {
+            "id": 9,
+            "troops": 6447,
+            "food": 15279,
+            "target": 11
+          }
+        ]
+      },
+      {
+        "turn": 60,
+        "home": {
+          "force": 0,
+          "troops": 3000,
+          "food": 41832,
+          "gold": 1807,
+          "officers": 25
+        },
+        "target": {
+          "force": 0,
+          "troops": 3579
+        },
+        "ap": 255,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 90,
+        "home": {
+          "force": 0,
+          "troops": 3000,
+          "food": 60957,
+          "gold": 2019,
+          "officers": 28
+        },
+        "target": {
+          "force": 11,
+          "troops": 3255
+        },
+        "ap": 255,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 118,
+        "home": {
+          "force": 11,
+          "troops": 3000,
+          "food": 89400,
+          "gold": 2762,
+          "officers": 1
+        },
+        "target": {
+          "force": 11,
+          "troops": 3255
+        },
+        "ap": 255,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 119,
+        "home": {
+          "force": 11,
+          "troops": 3000,
+          "food": 89400,
+          "gold": 2662,
+          "officers": 1
+        },
+        "target": {
+          "force": 11,
+          "troops": 3255
+        },
+        "ap": 255,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 134,
+        "home": {
+          "force": 11,
+          "troops": 3000,
+          "food": 101839,
+          "gold": 4316,
+          "officers": 1
+        },
+        "target": {
+          "force": 11,
+          "troops": 3000
+        },
+        "ap": 255,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 150,
+        "home": {
+          "force": 11,
+          "troops": 2708,
+          "food": 91373,
+          "gold": 5660,
+          "officers": 1
+        },
+        "target": {
+          "force": 11,
+          "troops": 6900
+        },
+        "ap": 255,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 180,
+        "home": {
+          "force": 11,
+          "troops": 6900,
+          "food": 97328,
+          "gold": 11788,
+          "officers": 0
+        },
+        "target": {
+          "force": 11,
+          "troops": 7563
+        },
+        "ap": 255,
+        "threatened": false,
+        "units": []
+      }
+    ],
+    "bad": 0,
+    "decisions": {
+      "duel": 3,
+      "debate": 3,
+      "diplo": 0
+    }
+  },
+  {
+    "sid": 251,
+    "seed": 42,
+    "policy": "delegate",
+    "fid": 0,
+    "startHome": 0,
+    "targetCity": 1,
+    "targetForce": 1,
+    "turn": 181,
+    "alive": true,
+    "captures": [
+      {
+        "turn": 57,
+        "city": 5,
+        "from": null
+      }
+    ],
+    "events": [
+      {
+        "turn": 4,
+        "kind": "dispatch",
+        "home": 0,
+        "id": 25,
+        "force": 0,
+        "troops": 3000,
+        "food": 7200
+      },
+      {
+        "turn": 4,
+        "kind": "order",
+        "id": 25,
+        "to": 2,
+        "owner": null,
+        "legionActing": true,
+        "troops": 3000,
+        "food": 7200,
+        "siegeAge": 0,
+        "targetTroops": 0,
+        "stack": [
+          "    at g.orderUnit (file://tools/study-r216-legion.mjs:2:1455)",
+          "    at aiThink (file://js/ai.js:225:26)",
+          "    at Game.endTurn (file://js/game.js:1537:74)"
+        ]
+      },
+      {
+        "turn": 23,
+        "kind": "order",
+        "id": 25,
+        "to": 0,
+        "owner": 0,
+        "legionActing": true,
+        "troops": 645,
+        "food": 1822,
+        "siegeAge": 10,
+        "targetTroops": 19000,
+        "stack": [
+          "    at g.orderUnit (file://tools/study-r216-legion.mjs:2:1455)",
+          "    at aiThink (file://js/ai.js:258:24)",
+          "    at Game.endTurn (file://js/game.js:1537:74)"
+        ]
+      },
+      {
+        "turn": 38,
+        "kind": "dispatch",
+        "home": 0,
+        "id": 106,
+        "force": 0,
+        "troops": 3000,
+        "food": 7200
+      },
+      {
+        "turn": 38,
+        "kind": "order",
+        "id": 106,
+        "to": 5,
+        "owner": null,
+        "legionActing": true,
+        "troops": 3000,
+        "food": 7200,
+        "siegeAge": 0,
+        "targetTroops": 0,
+        "stack": [
+          "    at g.orderUnit (file://tools/study-r216-legion.mjs:2:1455)",
+          "    at aiThink (file://js/ai.js:225:26)",
+          "    at Game.endTurn (file://js/game.js:1537:74)"
+        ]
+      },
+      {
+        "turn": 39,
+        "kind": "dispatch",
+        "home": 0,
+        "id": 112,
+        "force": 0,
+        "troops": 3000,
+        "food": 7200
+      },
+      {
+        "turn": 39,
+        "kind": "order",
+        "id": 112,
+        "to": 5,
+        "owner": null,
+        "legionActing": true,
+        "troops": 3000,
+        "food": 7200,
+        "siegeAge": 0,
+        "targetTroops": 0,
+        "stack": [
+          "    at g.orderUnit (file://tools/study-r216-legion.mjs:2:1455)",
+          "    at aiThink (file://js/ai.js:225:26)",
+          "    at Game.endTurn (file://js/game.js:1537:74)"
+        ]
+      }
+    ],
+    "observations": [
+      {
+        "turn": 2,
+        "home": {
+          "force": 0,
+          "troops": 22000,
+          "food": 60000,
+          "gold": 2900,
+          "officers": 1
+        },
+        "target": {
+          "force": 1,
+          "troops": 22000
+        },
+        "ap": 20,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 30,
+        "home": {
+          "force": 0,
+          "troops": 19000,
+          "food": 28150,
+          "gold": 2270,
+          "officers": 0
+        },
+        "target": {
+          "force": 1,
+          "troops": 19000
+        },
+        "ap": 255,
+        "threatened": false,
+        "units": [
+          {
+            "id": 25,
+            "troops": 645,
+            "food": 1306,
+            "target": 0
+          }
+        ]
+      },
+      {
+        "turn": 60,
+        "home": {
+          "force": 0,
+          "troops": 13645,
+          "food": 23262,
+          "gold": 5765,
+          "officers": 0
+        },
+        "target": {
+          "force": 1,
+          "troops": 19000
+        },
+        "ap": 255,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 90,
+        "home": {
+          "force": 0,
+          "troops": 12963,
+          "food": 16026,
+          "gold": 5756,
+          "officers": 0
+        },
+        "target": {
+          "force": 1,
+          "troops": 19000
+        },
+        "ap": 255,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 118,
+        "home": {
+          "force": 0,
+          "troops": 12315,
+          "food": 18548,
+          "gold": 11004,
+          "officers": 0
+        },
+        "target": {
+          "force": 1,
+          "troops": 19000
+        },
+        "ap": 245,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 119,
+        "home": {
+          "force": 0,
+          "troops": 12315,
+          "food": 18548,
+          "gold": 11004,
+          "officers": 0
+        },
+        "target": {
+          "force": 1,
+          "troops": 19000
+        },
+        "ap": 255,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 134,
+        "home": {
+          "force": 0,
+          "troops": 12315,
+          "food": 14668,
+          "gold": 16319,
+          "officers": 0
+        },
+        "target": {
+          "force": 1,
+          "troops": 17148
+        },
+        "ap": 255,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 150,
+        "home": {
+          "force": 0,
+          "troops": 12315,
+          "food": 24788,
+          "gold": 19534,
+          "officers": 0
+        },
+        "target": {
+          "force": 1,
+          "troops": 17148
+        },
+        "ap": 255,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 180,
+        "home": {
+          "force": 0,
+          "troops": 12315,
+          "food": 20653,
+          "gold": 28064,
+          "officers": 0
+        },
+        "target": {
+          "force": 1,
+          "troops": 17148
+        },
+        "ap": 255,
+        "threatened": false,
+        "units": []
+      }
+    ],
+    "bad": 0,
+    "decisions": {
+      "duel": 0,
+      "debate": 1,
+      "diplo": 0
+    }
+  },
+  {
+    "sid": 251,
+    "seed": 42,
+    "policy": "attack_city",
+    "fid": 0,
+    "startHome": 0,
+    "targetCity": 1,
+    "targetForce": 1,
+    "turn": 181,
+    "alive": true,
+    "captures": [],
+    "events": [
+      {
+        "turn": 119,
+        "kind": "dispatch",
+        "home": 0,
+        "id": 228,
+        "force": 0,
+        "troops": 7534,
+        "food": 12131
+      },
+      {
+        "turn": 119,
+        "kind": "order",
+        "id": 228,
+        "to": 1,
+        "owner": 1,
+        "legionActing": true,
+        "troops": 7534,
+        "food": 12131,
+        "siegeAge": 0,
+        "targetTroops": 3000,
+        "stack": [
+          "    at g.orderUnit (file://tools/study-r216-legion.mjs:2:1455)",
+          "    at aiThink (file://js/ai.js:225:26)",
+          "    at Game.endTurn (file://js/game.js:1537:74)"
+        ]
+      },
+      {
+        "turn": 134,
+        "kind": "order",
+        "id": 228,
+        "to": 0,
+        "owner": 0,
+        "legionActing": true,
+        "troops": 4523,
+        "food": 7215,
+        "siegeAge": 10,
+        "targetTroops": 3000,
+        "stack": [
+          "    at g.orderUnit (file://tools/study-r216-legion.mjs:2:1455)",
+          "    at aiThink (file://js/ai.js:258:24)",
+          "    at Game.endTurn (file://js/game.js:1537:74)"
+        ]
+      }
+    ],
+    "observations": [
+      {
+        "turn": 2,
+        "home": {
+          "force": 0,
+          "troops": 22000,
+          "food": 60000,
+          "gold": 2900,
+          "officers": 1
+        },
+        "target": {
+          "force": 1,
+          "troops": 22000
+        },
+        "ap": 20,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 30,
+        "home": {
+          "force": 0,
+          "troops": 19855,
+          "food": 10896,
+          "gold": 1834,
+          "officers": 5
+        },
+        "target": {
+          "force": 1,
+          "troops": 19000
+        },
+        "ap": 130,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 60,
+        "home": {
+          "force": 0,
+          "troops": 10534,
+          "food": 18161,
+          "gold": 2237,
+          "officers": 8
+        },
+        "target": {
+          "force": 1,
+          "troops": 19000
+        },
+        "ap": 255,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 90,
+        "home": {
+          "force": 0,
+          "troops": 10534,
+          "food": 15146,
+          "gold": 4947,
+          "officers": 8
+        },
+        "target": {
+          "force": 1,
+          "troops": 19000
+        },
+        "ap": 255,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 118,
+        "home": {
+          "force": 0,
+          "troops": 10534,
+          "food": 12131,
+          "gold": 6357,
+          "officers": 8
+        },
+        "target": {
+          "force": 1,
+          "troops": 20000
+        },
+        "ap": 255,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 119,
+        "home": {
+          "force": 0,
+          "troops": 10534,
+          "food": 12131,
+          "gold": 6357,
+          "officers": 8
+        },
+        "target": {
+          "force": 1,
+          "troops": 3000
+        },
+        "ap": 255,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 134,
+        "home": {
+          "force": 0,
+          "troops": 3000,
+          "food": 19784,
+          "gold": 8412,
+          "officers": 6
+        },
+        "target": {
+          "force": 1,
+          "troops": 6152
+        },
+        "ap": 255,
+        "threatened": false,
+        "units": [
+          {
+            "id": 228,
+            "troops": 5042,
+            "food": 7887,
+            "target": 1
+          }
+        ]
+      },
+      {
+        "turn": 150,
+        "home": {
+          "force": 0,
+          "troops": 7523,
+          "food": 32101,
+          "gold": 12327,
+          "officers": 8
+        },
+        "target": {
+          "force": 1,
+          "troops": 9233
+        },
+        "ap": 255,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 180,
+        "home": {
+          "force": 0,
+          "troops": 7523,
+          "food": 33136,
+          "gold": 18897,
+          "officers": 10
+        },
+        "target": {
+          "force": 1,
+          "troops": 11852
+        },
+        "ap": 255,
+        "threatened": false,
+        "units": []
+      }
+    ],
+    "bad": 0,
+    "decisions": {
+      "duel": 0,
+      "debate": 4,
+      "diplo": 0
+    }
+  },
+  {
+    "sid": 251,
+    "seed": 42,
+    "policy": "attack_force",
+    "fid": 0,
+    "startHome": 0,
+    "targetCity": 1,
+    "targetForce": 1,
+    "turn": 181,
+    "alive": true,
+    "captures": [],
+    "events": [
+      {
+        "turn": 119,
+        "kind": "dispatch",
+        "home": 0,
+        "id": 228,
+        "force": 0,
+        "troops": 7534,
+        "food": 12131
+      },
+      {
+        "turn": 119,
+        "kind": "order",
+        "id": 228,
+        "to": 1,
+        "owner": 1,
+        "legionActing": true,
+        "troops": 7534,
+        "food": 12131,
+        "siegeAge": 0,
+        "targetTroops": 3000,
+        "stack": [
+          "    at g.orderUnit (file://tools/study-r216-legion.mjs:2:1455)",
+          "    at aiThink (file://js/ai.js:225:26)",
+          "    at Game.endTurn (file://js/game.js:1537:74)"
+        ]
+      },
+      {
+        "turn": 134,
+        "kind": "order",
+        "id": 228,
+        "to": 0,
+        "owner": 0,
+        "legionActing": true,
+        "troops": 4523,
+        "food": 7215,
+        "siegeAge": 10,
+        "targetTroops": 3000,
+        "stack": [
+          "    at g.orderUnit (file://tools/study-r216-legion.mjs:2:1455)",
+          "    at aiThink (file://js/ai.js:258:24)",
+          "    at Game.endTurn (file://js/game.js:1537:74)"
+        ]
+      }
+    ],
+    "observations": [
+      {
+        "turn": 2,
+        "home": {
+          "force": 0,
+          "troops": 22000,
+          "food": 60000,
+          "gold": 2900,
+          "officers": 1
+        },
+        "target": {
+          "force": 1,
+          "troops": 22000
+        },
+        "ap": 20,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 30,
+        "home": {
+          "force": 0,
+          "troops": 19855,
+          "food": 10896,
+          "gold": 1834,
+          "officers": 5
+        },
+        "target": {
+          "force": 1,
+          "troops": 19000
+        },
+        "ap": 130,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 60,
+        "home": {
+          "force": 0,
+          "troops": 10534,
+          "food": 18161,
+          "gold": 2237,
+          "officers": 8
+        },
+        "target": {
+          "force": 1,
+          "troops": 19000
+        },
+        "ap": 255,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 90,
+        "home": {
+          "force": 0,
+          "troops": 10534,
+          "food": 15146,
+          "gold": 4947,
+          "officers": 8
+        },
+        "target": {
+          "force": 1,
+          "troops": 19000
+        },
+        "ap": 255,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 118,
+        "home": {
+          "force": 0,
+          "troops": 10534,
+          "food": 12131,
+          "gold": 6357,
+          "officers": 8
+        },
+        "target": {
+          "force": 1,
+          "troops": 20000
+        },
+        "ap": 255,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 119,
+        "home": {
+          "force": 0,
+          "troops": 10534,
+          "food": 12131,
+          "gold": 6357,
+          "officers": 8
+        },
+        "target": {
+          "force": 1,
+          "troops": 3000
+        },
+        "ap": 255,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 134,
+        "home": {
+          "force": 0,
+          "troops": 3000,
+          "food": 19784,
+          "gold": 8412,
+          "officers": 6
+        },
+        "target": {
+          "force": 1,
+          "troops": 6152
+        },
+        "ap": 255,
+        "threatened": false,
+        "units": [
+          {
+            "id": 228,
+            "troops": 5042,
+            "food": 7887,
+            "target": 1
+          }
+        ]
+      },
+      {
+        "turn": 150,
+        "home": {
+          "force": 0,
+          "troops": 7523,
+          "food": 32101,
+          "gold": 12327,
+          "officers": 8
+        },
+        "target": {
+          "force": 1,
+          "troops": 9233
+        },
+        "ap": 255,
+        "threatened": false,
+        "units": []
+      },
+      {
+        "turn": 180,
+        "home": {
+          "force": 0,
+          "troops": 7523,
+          "food": 33136,
+          "gold": 18897,
+          "officers": 10
+        },
+        "target": {
+          "force": 1,
+          "troops": 11852
+        },
+        "ap": 255,
+        "threatened": false,
+        "units": []
+      }
+    ],
+    "bad": 0,
+    "decisions": {
+      "duel": 0,
+      "debate": 4,
+      "diplo": 0
+    }
+  }
+]
