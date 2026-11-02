@@ -321,7 +321,7 @@ function showDebate() { // R11: 설전 모달
       <p style="font-size:11px;color:#999">반박=상대 공격 무효+반격 · 경청=논리 회복 · 도발=다음 화술 봉인 · 🔒는 지력 부족(서적 보유 시 해금)</p>
       <p><button class="cmd" id="debate-auto">위임 (자동)</button></p></div>`;
     m.querySelectorAll('.debate-card').forEach(b => b.onclick = () => { const sel = b.dataset.c; game.debateTick(d, pk === 'a' ? sel : game.debatePolicy(d, 'a'), pk === 'a' ? game.debatePolicy(d, 'b') : sel); game.autosave(); after(); }); // 플레이어 카드는 플레이어 측(pk)에 배정
-    $('debate-auto').onclick = () => { game.debateAuto(d); after(); };
+    $('debate-auto').onclick = () => { game.debateAuto(d); game.autosave(); after(); };
   };
   const after = () => {
     if (game.pendingDebate) render();
