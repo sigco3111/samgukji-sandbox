@@ -1222,7 +1222,9 @@ if (g.units.find(u => u.id === 9999) && g.units.find(u => u.id === 9999).qi === 
   if (!mapSrc.includes('setSeason(month)') || !mapSrc.includes('baseColors')) { console.log('FAIL: R16 setSeason 없음'); process.exit(1); }
   if (!mainSrc.includes('map.setSeason?.(game.month)')) { console.log('FAIL: R16 계절 미호출'); process.exit(1); }
   // 일기토·설전 초상화 연출
-  if (!mainSrc.includes('portraitCss(po.idx)') || !mainSrc.includes('portraitCss(P.o)')) { console.log('FAIL: R16 대결 초상화 없음'); process.exit(1); }
+  if (!readFileSync('js/duel-ui.js','utf8').includes('portraitCss(po.idx)') || !mainSrc.includes('portraitCss(P.o)')) { console.log('FAIL: R16 대결 초상화 없음'); process.exit(1); }
+  
+// R199: old main-only check replaced above after extracting duel UI. if (!mainSrc.includes('portraitCss(po.idx)') || !mainSrc.includes('portraitCss(P.o)')) { console.log('FAIL: R16 대결 초상화 없음'); process.exit(1); }
   // 조사: 변환된 메시지에 괄호 조사 잔류 금지 (R15 게이트 시나리오 로그 검사)
   const g24 = new Game(JSON.parse(JSON.stringify(scen)), JSON.parse(JSON.stringify(officers)), {}, 0);
   g24.units = [];
