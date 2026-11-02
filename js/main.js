@@ -1,19 +1,19 @@
-import {overlappingUnits} from './unit-overlap.js?v=r231';
-import {unitNearbyCities} from './unit-city-access.js?v=r231';
-import {unitOrderText} from './unit-order.js?v=r231';
-import {facilityEffectDesc} from './facility-desc.js?v=r231';
-import {mountDebate} from './debate-ui.js?v=r231';
-import {mountDuel} from './duel-ui.js?v=r231';
+import {overlappingUnits} from './unit-overlap.js?v=r234';
+import {unitNearbyCities} from './unit-city-access.js?v=r234';
+import {unitOrderText} from './unit-order.js?v=r234';
+import {facilityEffectDesc} from './facility-desc.js?v=r234';
+import {mountDebate} from './debate-ui.js?v=r234';
+import {mountDuel} from './duel-ui.js?v=r234';
 // 진입점: 화면 전환·UI·지도 연결
-import { Map3D, toWorld } from './map3d.js?v=r231';
-import { Game, SAVE_KEY, RULES, forceColor, UNIT_TYPES, ARTS, OFFICES, restoreOfficer, FIELD_FACS, TRAPS, SHIP_TYPES, TAC_SHIP_OK, josa, josaRo, TECH_BRANCHES, TECH_P, TECH_GOLD, TECH_DESC, FACILITIES, ITEMS, SIEGE_BUILD, SHIP_BUILD, ARMS_BUILD, AB_BRANCHES, AB_P, AB_SKILL, AB_PICK } from './game.js?v=r231';
-import { aiThink } from './ai.js?v=r231';
-import { rosterRows, rosterOfficer, rosterRelations } from './officer-roster.js?v=r231';
+import { Map3D, toWorld } from './map3d.js?v=r234';
+import { Game, SAVE_KEY, RULES, forceColor, UNIT_TYPES, ARTS, OFFICES, restoreOfficer, FIELD_FACS, TRAPS, SHIP_TYPES, TAC_SHIP_OK, josa, josaRo, TECH_BRANCHES, TECH_P, TECH_GOLD, TECH_DESC, FACILITIES, ITEMS, SIEGE_BUILD, SHIP_BUILD, ARMS_BUILD, AB_BRANCHES, AB_P, AB_SKILL, AB_PICK } from './game.js?v=r234';
+import { aiThink } from './ai.js?v=r234';
+import { rosterRows, rosterOfficer, rosterRelations } from './officer-roster.js?v=r234';
 
 const $ = id => document.getElementById(id);
 let DATA = null, game = null, map = null, selectedUnit = null, autoTimer = null, pendingFire = null; // R15: 직접 전법·계략 대기
 
-const BUILD_ID = 'r231'; // 빌드 ID (index.html의 meta[name=build]와 같아야 함 - 오래된 캐시된 index와 새 스크립트의 혼합 감지)
+const BUILD_ID = 'r234'; // 빌드 ID (index.html의 meta[name=build]와 같아야 함 - 오래된 캐시된 index와 새 스크립트의 혼합 감지)
 function checkBuildSkew() {
   const idx = document.querySelector('meta[name="build"]')?.content;
   if (idx === BUILD_ID) { sessionStorage.removeItem('cheonha-xi-web.skew'); return; } // 일치하면 재시도 표식 해제
@@ -26,7 +26,7 @@ checkBuildSkew();
 async function loadData() {
   const [officers, skills, portraits, s184, s190, s251] = await Promise.all(
     ['data/officers670.json','data/skills.json','data/portraits.json','data/scenario-184.json','data/scenario-190.json','data/scenario-251.json']
-      .map(u => fetch(u + '?v=r231').then(r => r.json())));
+      .map(u => fetch(u + '?v=r234').then(r => r.json())));
   const byIdx = {};
   for (const o of officers) byIdx[o.idx] = o;
   DATA = { officers: byIdx, skills, portraits, scenarios: { '184': s184, '190': s190, '251': s251 } };
@@ -848,6 +848,18 @@ function personnelUiButton(game, c, kind, idx, label) {
   const attrs = kind === 'search' ? 'id="cmd-search"' : 'class="cmd cmd-rec" data-i="'+idx+'"';
   return `<span style="display:inline-flex;flex-direction:column;vertical-align:top;max-width:100%"><button ${kind === 'search' ? 'class="cmd" ' : ''}${attrs} ${info.why ? 'disabled' : ''}>${label}·AP${info.ap})</button>${info.why ? `<small class="fac-why" role="status">${info.why}</small>` : ''}</span>`;
 }
+function releaseUiInfo(game, c, idx) {
+  const ap = Math.ceil(20 * game.apMult(c, 'personnel')), t = game.officers[idx], f = game.forces[c.force];
+  let why = '';
+  if (!f?.alive || t?.state?.status !== 'captive' || t.state.city !== c.id || t.state.captor !== c.force) why = '현재 억류 중인 포로가 아닙니다';
+  else if (game._blocked(c)) why = '군단 소속 도시입니다';
+  else if (f.ap < ap) why = '행동력 ' + ap + ' 필요';
+  return { ap, why };
+}
+function releaseUiButton(game, c, idx) {
+  const info = releaseUiInfo(game,c,idx);
+  return `<span style="display:inline-flex;flex-direction:column;vertical-align:top;max-width:100%"><button class="cmd cmd-rel" data-i="${idx}"${info.why?' disabled':''}>석방 (기교P +50·AP${info.ap})</button>${info.why?`<small class="fac-why" role="status">${info.why}</small>`:''}</span>`;
+}
 function equipmentUiInfo(game, c, family, key) {
   const ship = family === 'ship', spec = (ship ? SHIP_BUILD : SIEGE_BUILD)[key];
   if (!c || c.force == null || !game.forces[c.force] || !spec) return { why: '도시/종류 없음' };
@@ -976,7 +988,7 @@ function showCityPanel(c) {
       html += officerRow(o.idx) + `<span style="font-size:12px;color:#c96">충성 ${o.state?.loyal ?? '?'} · 원 소속 ${game.forceName(o.state?.force)}</span>`;
       if (mine) {
         if (game.recruitChance(c.id, o.idx) > 0) html += personnelUiButton(game,c,'officer',o.idx,`등용 (금100·성공률 ${Math.round(game.recruitChance(c.id, o.idx)*100)}%`);
-        html += `<button class="cmd cmd-rel" data-i="${o.idx}">석방 (기교P +50)</button>`;
+        html += releaseUiButton(game,c,o.idx);
       }
     }
   }
@@ -1019,7 +1031,7 @@ function showCityPanel(c) {
     p.querySelectorAll('.cmd-rwd').forEach(b => b.onclick = () => { if (rewardUiWhy(game,c,Number(b.dataset.i))) return; const ok = game.rewardOfficers(c.id, [Number(b.dataset.i)]); refreshAll(); showCityPanel(c); if (!ok) game.log(game.lastRewardWhy ?? '포상할 수 없습니다', true); }); // 褒賞
     p.querySelectorAll('.cmd-office').forEach(sel => sel.onchange = () => { const ok = game.appointOffice(c.id, Number(sel.dataset.i), Number(sel.value)); refreshAll(); showCityPanel(c); if (!ok) { game.log(game.lastOfficeWhy ?? '임명할 수 없습니다', true); refreshLog(); } }); // 官職
     p.querySelectorAll('.cmd-rec').forEach(b => b.onclick = () => { if (personnelUiInfo(game,c,'officer',Number(b.dataset.i)).why) return; const ok = game.recruitOfficer(c.id, Number(b.dataset.i)); refreshAll(); showCityPanel(c); if (!ok && game.lastRecruitWhy) { game.log(game.lastRecruitWhy, true); game.lastRecruitWhy = null; refreshLog(); } if (game.pendingDebate) showDebate(); }); // R11: 등용 실패 시 설전 발동 / R111: 비용 부족 사유 안내
-    p.querySelectorAll('.cmd-rel').forEach(b => b.onclick = () => { const ok = game.releaseCaptive(c.id, Number(b.dataset.i)); refreshAll(); showCityPanel(c); if (!ok && game.lastReleaseWhy) { game.log(game.lastReleaseWhy, true); game.lastReleaseWhy = null; refreshLog(); } }); // R111: 포로 석방 + 비용 부족 사유 안내
+    p.querySelectorAll('.cmd-rel').forEach(b => b.onclick = () => { if (releaseUiInfo(game,c,Number(b.dataset.i)).why) return; const ok = game.releaseCaptive(c.id, Number(b.dataset.i)); refreshAll(); showCityPanel(c); if (!ok && game.lastReleaseWhy) { game.log(game.lastReleaseWhy, true); game.lastReleaseWhy = null; refreshLog(); } }); // R111: 포로 석방 + 비용 부족 사유 안내
   }
   const legManage = $('cmd-legion');
   if (legManage) legManage.onclick = () => showLegions(c); // 수동 내정 명령 차단과 관리 진입은 분리
