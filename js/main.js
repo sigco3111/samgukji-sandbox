@@ -1,19 +1,19 @@
-import {overlappingUnits} from './unit-overlap.js?v=r234';
-import {unitNearbyCities} from './unit-city-access.js?v=r234';
-import {unitOrderText} from './unit-order.js?v=r234';
-import {facilityEffectDesc} from './facility-desc.js?v=r234';
-import {mountDebate} from './debate-ui.js?v=r234';
-import {mountDuel} from './duel-ui.js?v=r234';
+import {overlappingUnits} from './unit-overlap.js?v=r236';
+import {unitNearbyCities} from './unit-city-access.js?v=r236';
+import {unitOrderText} from './unit-order.js?v=r236';
+import {facilityEffectDesc} from './facility-desc.js?v=r236';
+import {mountDebate} from './debate-ui.js?v=r236';
+import {mountDuel} from './duel-ui.js?v=r236';
 // 진입점: 화면 전환·UI·지도 연결
-import { Map3D, toWorld } from './map3d.js?v=r234';
-import { Game, SAVE_KEY, RULES, forceColor, UNIT_TYPES, ARTS, OFFICES, restoreOfficer, FIELD_FACS, TRAPS, SHIP_TYPES, TAC_SHIP_OK, josa, josaRo, TECH_BRANCHES, TECH_P, TECH_GOLD, TECH_DESC, FACILITIES, ITEMS, SIEGE_BUILD, SHIP_BUILD, ARMS_BUILD, AB_BRANCHES, AB_P, AB_SKILL, AB_PICK } from './game.js?v=r234';
-import { aiThink } from './ai.js?v=r234';
-import { rosterRows, rosterOfficer, rosterRelations } from './officer-roster.js?v=r234';
+import { Map3D, toWorld } from './map3d.js?v=r236';
+import { Game, SAVE_KEY, RULES, forceColor, UNIT_TYPES, ARTS, OFFICES, restoreOfficer, FIELD_FACS, TRAPS, SHIP_TYPES, TAC_SHIP_OK, josa, josaRo, TECH_BRANCHES, TECH_P, TECH_GOLD, TECH_DESC, FACILITIES, ITEMS, SIEGE_BUILD, SHIP_BUILD, ARMS_BUILD, AB_BRANCHES, AB_P, AB_SKILL, AB_PICK } from './game.js?v=r236';
+import { aiThink } from './ai.js?v=r236';
+import { rosterRows, rosterOfficer, rosterRelations } from './officer-roster.js?v=r236';
 
 const $ = id => document.getElementById(id);
 let DATA = null, game = null, map = null, selectedUnit = null, autoTimer = null, pendingFire = null; // R15: 직접 전법·계략 대기
 
-const BUILD_ID = 'r234'; // 빌드 ID (index.html의 meta[name=build]와 같아야 함 - 오래된 캐시된 index와 새 스크립트의 혼합 감지)
+const BUILD_ID = 'r236'; // 빌드 ID (index.html의 meta[name=build]와 같아야 함 - 오래된 캐시된 index와 새 스크립트의 혼합 감지)
 function checkBuildSkew() {
   const idx = document.querySelector('meta[name="build"]')?.content;
   if (idx === BUILD_ID) { sessionStorage.removeItem('cheonha-xi-web.skew'); return; } // 일치하면 재시도 표식 해제
@@ -26,7 +26,7 @@ checkBuildSkew();
 async function loadData() {
   const [officers, skills, portraits, s184, s190, s251] = await Promise.all(
     ['data/officers670.json','data/skills.json','data/portraits.json','data/scenario-184.json','data/scenario-190.json','data/scenario-251.json']
-      .map(u => fetch(u + '?v=r234').then(r => r.json())));
+      .map(u => fetch(u + '?v=r236').then(r => r.json())));
   const byIdx = {};
   for (const o of officers) byIdx[o.idx] = o;
   DATA = { officers: byIdx, skills, portraits, scenarios: { '184': s184, '190': s190, '251': s251 } };
@@ -292,7 +292,7 @@ function showDuel() {
 }
 function showSwear(c) { // R12: 의형제 결연 모달
   const m = $('modal'); m.classList.remove('hidden');
-  const eligible = c.officers.filter(i => (DATA.officers[i]?.state?.merit ?? 0) >= 500);
+  const eligible = c.officers.filter(i => game.swornEligible(c.id,i));
   const techP = game.forces[c.force]?.techP ?? 0;
   const render = sel => {
     m.innerHTML = `<div class="box" style="min-width:380px">
