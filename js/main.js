@@ -1,22 +1,24 @@
-import {renderCityFacilitySummary} from './city-fac-summary.js?v=r250';
-import {mountAim} from './aim-targets.js?v=r250';
-import {mountBattleReport} from './battle-report.js?v=r250';
-import {overlappingUnits} from './unit-overlap.js?v=r250';
-import {unitNearbyCities} from './unit-city-access.js?v=r250';
-import {unitOrderText} from './unit-order.js?v=r250';
-import {facilityEffectDesc} from './facility-desc.js?v=r250';
-import {mountDebate} from './debate-ui.js?v=r250';
-import {mountDuel} from './duel-ui.js?v=r250';
+import {createMapBattleFeedback} from './map-battle-feedback.js?v=r252';
+import {renderCityFacilitySummary} from './city-fac-summary.js?v=r252';
+import {mountAim} from './aim-targets.js?v=r252';
+import {mountBattleReport} from './battle-report.js?v=r252';
+import {overlappingUnits} from './unit-overlap.js?v=r252';
+import {unitNearbyCities} from './unit-city-access.js?v=r252';
+import {unitOrderText} from './unit-order.js?v=r252';
+import {facilityEffectDesc} from './facility-desc.js?v=r252';
+import {mountDebate} from './debate-ui.js?v=r252';
+import {mountDuel} from './duel-ui.js?v=r252';
 // 진입점: 화면 전환·UI·지도 연결
-import { Map3D, toWorld } from './map3d.js?v=r250';
-import { Game, SAVE_KEY, RULES, forceColor, UNIT_TYPES, ARTS, OFFICES, restoreOfficer, FIELD_FACS, TRAPS, SHIP_TYPES, TAC_SHIP_OK, josa, josaRo, TECH_BRANCHES, TECH_P, TECH_GOLD, TECH_DESC, FACILITIES, ITEMS, SIEGE_BUILD, SHIP_BUILD, ARMS_BUILD, AB_BRANCHES, AB_P, AB_SKILL, AB_PICK } from './game.js?v=r250';
-import { aiThink } from './ai.js?v=r250';
-import { rosterRows, rosterOfficer, rosterRelations } from './officer-roster.js?v=r250';
+import { Map3D, toWorld } from './map3d.js?v=r252';
+import { Game, SAVE_KEY, RULES, forceColor, UNIT_TYPES, ARTS, OFFICES, restoreOfficer, FIELD_FACS, TRAPS, SHIP_TYPES, TAC_SHIP_OK, josa, josaRo, TECH_BRANCHES, TECH_P, TECH_GOLD, TECH_DESC, FACILITIES, ITEMS, SIEGE_BUILD, SHIP_BUILD, ARMS_BUILD, AB_BRANCHES, AB_P, AB_SKILL, AB_PICK } from './game.js?v=r252';
+import { aiThink } from './ai.js?v=r252';
+import { rosterRows, rosterOfficer, rosterRelations } from './officer-roster.js?v=r252';
 
 const $ = id => document.getElementById(id);
+const mapBattleFeedback=createMapBattleFeedback({});
 let DATA = null, game = null, map = null, selectedUnit = null, autoTimer = null, pendingFire = null; // R15: 직접 전법·계략 대기
 
-const BUILD_ID = 'r250'; // 빌드 ID (index.html의 meta[name=build]와 같아야 함 - 오래된 캐시된 index와 새 스크립트의 혼합 감지)
+const BUILD_ID = 'r252'; // 빌드 ID (index.html의 meta[name=build]와 같아야 함 - 오래된 캐시된 index와 새 스크립트의 혼합 감지)
 function checkBuildSkew() {
   const idx = document.querySelector('meta[name="build"]')?.content;
   if (idx === BUILD_ID) { sessionStorage.removeItem('cheonha-xi-web.skew'); return; } // 일치하면 재시도 표식 해제
@@ -29,7 +31,7 @@ checkBuildSkew();
 async function loadData() {
   const [officers, skills, portraits, s184, s190, s251] = await Promise.all(
     ['data/officers670.json','data/skills.json','data/portraits.json','data/scenario-184.json','data/scenario-190.json','data/scenario-251.json']
-      .map(u => fetch(u + '?v=r250').then(r => r.json())));
+      .map(u => fetch(u + '?v=r252').then(r => r.json())));
   const byIdx = {};
   for (const o of officers) byIdx[o.idx] = o;
   DATA = { officers: byIdx, skills, portraits, scenarios: { '184': s184, '190': s190, '251': s251 } };
@@ -88,6 +90,7 @@ function startGame(scenId, fid) {
   refreshAll();
 }
 function enterGame() {
+  mapBattleFeedback.clear();
   duelView?.dispose(); duelView=null;
   game.onSaveStatus = refreshSaveNotice;
   show('screen-game');
@@ -97,7 +100,7 @@ function enterGame() {
     game.renderedWaterFn = (lon, lat) => { const [x, z] = toWorld(lon, lat); return map.levels ? map.levelAtWorld(x, z) === 0 : true; }; // R64: 수군 출진 위치·연안 판정을 렌더러 지형과 일치시키는 주입 훅
     map.cityColorOf = f => forceColor(f); // R116: 성 기치 천 세력색
     map.onPick = onPick;
-    (function loop() { map.render(); requestAnimationFrame(loop); })();
+    (function loop() { map.render(); mapBattleFeedback.render(game,(lon,lat)=>map.projectLL(lon,lat)); requestAnimationFrame(loop); })();
   }
   game.forestFn = (lon, lat) => map.forestAtLL(lon, lat);
   game.mountainFn = (lon, lat) => map.mountainAtLL(lon, lat); // 간도(산악 샛길)
@@ -220,8 +223,10 @@ function refreshLog() {
 function doTurn() {
   if (!game || game.over) return;
   if ((game.pendingDiplo ?? []).length) { game.log('보류 중인 외교 제안을 먼저 결정해 주세요', true); refreshLog(); showPendingDecision(); return; } // R123: 보류 중 턴 진행 불가 — 결정 모달 재표시
+  const oldBattleRows=new Set(game.logs);
   game.endTurn(aiThink);
   refreshAll();
+  mapBattleFeedback.show(game,oldBattleRows);
   if (selectedUnit != null && !$('panel').classList.contains('hidden')) { // 턴 처리 후 열려 있는 부대 패널 갱신 (건설 완료·병력·기력 반영)
     if (game.units.find(x => x.id === selectedUnit)) showUnitPanel(selectedUnit); else { $('panel').classList.add('hidden'); selectedUnit = null; }
   } else if ($('panel').dataset.view === 'city' && lastCityId != null && !$('panel').classList.contains('hidden')) { // R108: 열려 있는 도시 패널(기본 화면)도 턴 반영 — 병력·로스터 정체 방지. 스크롤 위치는 유지하고, 출진·기교 등 하위 화면의 입력 중인 상태는 덮지 않음
