@@ -1,17 +1,18 @@
-import {unitOrderText} from './unit-order.js?v=r225';
-import {facilityEffectDesc} from './facility-desc.js?v=r225';
-import {mountDebate} from './debate-ui.js?v=r225';
-import {mountDuel} from './duel-ui.js?v=r225';
+import {unitNearbyCities} from './unit-city-access.js?v=r226';
+import {unitOrderText} from './unit-order.js?v=r226';
+import {facilityEffectDesc} from './facility-desc.js?v=r226';
+import {mountDebate} from './debate-ui.js?v=r226';
+import {mountDuel} from './duel-ui.js?v=r226';
 // 진입점: 화면 전환·UI·지도 연결
-import { Map3D, toWorld } from './map3d.js?v=r225';
-import { Game, SAVE_KEY, RULES, forceColor, UNIT_TYPES, ARTS, OFFICES, restoreOfficer, FIELD_FACS, TRAPS, SHIP_TYPES, TAC_SHIP_OK, josa, josaRo, TECH_BRANCHES, TECH_P, TECH_GOLD, TECH_DESC, FACILITIES, ITEMS, SIEGE_BUILD, SHIP_BUILD, ARMS_BUILD, AB_BRANCHES, AB_P, AB_SKILL, AB_PICK } from './game.js?v=r225';
-import { aiThink } from './ai.js?v=r225';
-import { rosterRows, rosterOfficer, rosterRelations } from './officer-roster.js?v=r225';
+import { Map3D, toWorld } from './map3d.js?v=r226';
+import { Game, SAVE_KEY, RULES, forceColor, UNIT_TYPES, ARTS, OFFICES, restoreOfficer, FIELD_FACS, TRAPS, SHIP_TYPES, TAC_SHIP_OK, josa, josaRo, TECH_BRANCHES, TECH_P, TECH_GOLD, TECH_DESC, FACILITIES, ITEMS, SIEGE_BUILD, SHIP_BUILD, ARMS_BUILD, AB_BRANCHES, AB_P, AB_SKILL, AB_PICK } from './game.js?v=r226';
+import { aiThink } from './ai.js?v=r226';
+import { rosterRows, rosterOfficer, rosterRelations } from './officer-roster.js?v=r226';
 
 const $ = id => document.getElementById(id);
 let DATA = null, game = null, map = null, selectedUnit = null, autoTimer = null, pendingFire = null; // R15: 직접 전법·계략 대기
 
-const BUILD_ID = 'r225'; // 빌드 ID (index.html의 meta[name=build]와 같아야 함 - 오래된 캐시된 index와 새 스크립트의 혼합 감지)
+const BUILD_ID = 'r226'; // 빌드 ID (index.html의 meta[name=build]와 같아야 함 - 오래된 캐시된 index와 새 스크립트의 혼합 감지)
 function checkBuildSkew() {
   const idx = document.querySelector('meta[name="build"]')?.content;
   if (idx === BUILD_ID) { sessionStorage.removeItem('cheonha-xi-web.skew'); return; } // 일치하면 재시도 표식 해제
@@ -24,7 +25,7 @@ checkBuildSkew();
 async function loadData() {
   const [officers, skills, portraits, s184, s190, s251] = await Promise.all(
     ['data/officers670.json','data/skills.json','data/portraits.json','data/scenario-184.json','data/scenario-190.json','data/scenario-251.json']
-      .map(u => fetch(u + '?v=r225').then(r => r.json())));
+      .map(u => fetch(u + '?v=r226').then(r => r.json())));
   const byIdx = {};
   for (const o of officers) byIdx[o.idx] = o;
   DATA = { officers: byIdx, skills, portraits, scenarios: { '184': s184, '190': s190, '251': s251 } };
@@ -1156,6 +1157,7 @@ function showUnitPanel(uid) {
   p.innerHTML = `<h3>${u.label} (${UNIT_TYPES[u.type].name})</h3>
     <p>소속: ${game.forceName(u.force)} · 병력 ${u.troops.toLocaleString()}<br>
     부장: ${u.officers.map(i => DATA.officers[i].name_ko).join(', ')}<br>기력 ${u.qi ?? 100} / 100${(u.conf ?? 0) > 0 ? ` · <span style='color:#e66'>혼란 ${u.conf}턴</span>` : ''}${u.food != null ? ` · 병량 ${Math.round(u.food)}${(() => { const eat = u.troops * RULES.garrisonFood / 3; const days = eat > 0 ? Math.round(u.food / eat) * 10 : 999; return days <= 30 ? ` <span style='color:#e66'>(${days}일분!)</span>` : ` (${days}일분)`; })()}` : ''}</p>
+    <p>${unitNearbyCities(u,game.cities).map(c=>`<button class="cmd up-city" data-c="${c.id}">근처 도시: ${c.name_ko} 정보</button>`).join(' ')}</p>
     <p id="up-order" style="color:#c9d6ab">${unitOrderText(u,game.cityById,game.fieldFacs)}</p>
     ${mine ? '<p style="color:#ffd700">목표 도시를 클릭하면 이동 명령을 내립니다.</p>' : ''}
     ${mine && game.tacticInfo?.(u) ? `<p>${game.tacticInfo(u).opts.map(o => o.block ? `<button class="cmd up-tac" data-tid="${o.id}" disabled style="opacity:.5">전법 ${o.name} (기력 ${o.qi}) — ${o.block}</button>` : `<button class="cmd up-tac" data-tid="${o.id}">전법 ${o.name} (기력 ${o.qi})</button>`).join(' ')}</p>` : ''}
@@ -1172,6 +1174,7 @@ function showUnitPanel(uid) {
     ${mine ? (() => { const nc = game.cities.find(c => game.canBreakLevee(u, c) === null); return nc ? `<p><button class="cmd" id="up-levee" data-c="${nc.id}">제방 파괴 — ${nc.name_ko} (내구 -15%·병사 -10%·2턴 침수)</button></p>` : ''; })() : ''}
     <p><button class="cmd" id="up-close">닫기</button></p>`;
   $('up-close').onclick = () => { $('panel').classList.add('hidden'); selectedUnit = null; pendingFire = null; };
+  p.querySelectorAll('.up-city').forEach(b => b.onclick = () => { const live = game.units.find(x=>x.id===uid), c = unitNearbyCities(live,game.cities).find(x=>x.id===Number(b.dataset.c)); if (!c) return; selectedUnit = null; pendingFire = null; lastCityId = c.id; showCityPanel(c); });
   const armFire = (kind, label, tid = null) => { // R15: 대상 선택 모드 진입
     pendingFire = { uid: u.id, kind, tid };
     p.innerHTML = `<h3>${u.label} — ${label}</h3><p style="color:#ffd700">인접한 적 부대나 도시를 클릭하면 발동합니다.</p><p><button class="cmd" id="up-cancel">취소</button></p>`;
