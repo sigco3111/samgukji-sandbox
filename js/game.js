@@ -423,7 +423,8 @@ export class Game {
     return m;
   }
 
-  unitDefMult(u) { return (this.unitHasSkill(u, '강직') ? 0.85 : 1) * this.fieldDefMult(u) * (this.elitePike(u) ? 0.92 : 1); }
+  leadershipDefMult(u) { const raw = this.officers[u.officers[0]]?.ldr; const ldr = Number.isFinite(raw) ? Math.max(1, Math.min(100, raw)) : 60; return 1 / (1 + (ldr - 60) / 200); } // R213 자체 잠정값: 주장 통솔60 기준. 주 피해·공성 반격만, 전법 부수 기준피해는 제외
+  unitDefMult(u, leadership = true) { return (leadership ? this.leadershipDefMult(u) : 1) * (this.unitHasSkill(u, '강직') ? 0.85 : 1) * this.fieldDefMult(u) * (this.elitePike(u) ? 0.92 : 1); }
   elitePike(u) { return (u.type === 'spear' || u.type === 'pike') && !!this.forces[u.force]?.arts?.['정예창병']; } // 정예창병 (자체 잠정값)
   unitTroopCap(fid) { return 20000 + (this.forces[fid]?.arts?.['군제개혁'] ? 3000 : 0); } // 군제개혁: 부대 병력 상한 +3000 (원작 자료 확인: 무장 통솔 병력 상한 +3000). 기본 20000은 이 게임의 자체 값
   dispatchCap(fid) { return 3; } // 부대 편성 무장 3명 제한 보존 (군제개혁의 「지휘 상한」 의미 미확정이라 변경 안 함)
@@ -1746,7 +1747,7 @@ produceArms(id,key){const g=this;const c=g.cityById[id],a=this.armsInfo(c,key);i
     }
     const lead = this.officers[u.officers[0]];
     let dmg = Math.round(u.troops * 0.12 * ut.atk * (0.7 + lead.war/150) * this.aptMult(u) * this.unitDmgMult(u, true) * this.unitItemAtk(u) * this.unitTechAtk(u) * this.unitRelMult(u) * (1 + 0.1 * this.techLv(u.force, '발명'))); // R12: 의형제·부부 같은 부대 공격 상승
-    let loss = Math.round(c.troops * 0.06 / ut.def + 150);
+    let loss = Math.round((c.troops * 0.06 / ut.def + 150) * this.leadershipDefMult(u));
     // 전법: 병종 적성 B 이상 + 기력 소모, 무력이 높을수록 발동 잘됨
     const tac = TACTICS[u.type]; // 검병은 전법 없음(설계 58행)
     const aptLv = u.type === 'sword' ? 1 : APT_LV(lead.apt?.[APT_IDX[u.type]]);
@@ -1904,18 +1905,19 @@ produceArms(id,key){const g=this;const c=g.cityById[id],a=this.armsInfo(c,key);i
       const utA = UNIT_TYPES[att.type], utD = UNIT_TYPES[def.type];
       const lead = this.officers[att.officers[0]] ?? { war: 60, int: 30, apt: null, name_ko: '적병 두목', idx: -1 };
       let dmg = Math.round(att.troops * 0.05 * utA.atk * (0.7 + lead.war/150) / utD.def * this.aptMult(att) * this.unitDmgMult(att) * this.unitItemAtk(att) * this.unitDefMult(def) * this.unitTechAtk(att) * this.unitRelMult(att) / this.unitRelMult(def) * (1 - 0.03 * this.techLv(def.force, '연병'))); // R12: 의형제·부부 공·방 상승
-      if (isWaterAt(att.x, att.z)) { dmg = Math.round(dmg * (utA.ship ? 1.3 : 0.7) * (this.unitHasSkill(att, '수완') ? 1.15 : 1)); } // 수전: 수군 우세, 육군 페널티, 수완 특기 +15% (자체 수치)
+      let extraBase = Math.round(att.troops * 0.05 * utA.atk * (0.7 + lead.war/150) / utD.def * this.aptMult(att) * this.unitDmgMult(att) * this.unitItemAtk(att) * this.unitDefMult(def, false) * this.unitTechAtk(att) * this.unitRelMult(att) / this.unitRelMult(def) * (1 - 0.03 * this.techLv(def.force, '연병'))); // R12: 의형제·부부 공·방 상승
+      if (isWaterAt(att.x, att.z)) { extraBase = Math.round(extraBase * (utA.ship ? 1.3 : 0.7) * (this.unitHasSkill(att, '수완') ? 1.15 : 1)); dmg = Math.round(dmg * (utA.ship ? 1.3 : 0.7) * (this.unitHasSkill(att, '수완') ? 1.15 : 1)); } // 수전: 수군 우세, 육군 페널티, 수완 특기 +15% (자체 수치)
       // 전법 (공성과 같은 규칙)
       const tac = TACTICS[att.type];
       const aptLv = att.type === 'sword' ? 1 : APT_LV(lead.apt?.[APT_IDX[att.type]]);
       if (att.type !== 'sword' && (att._tacTurn ?? -1) < this.turn && Math.random() < Math.min(0.55, 0.15 + lead.war/250)) { // 한 타격당 전법 기회 1회. 적성·기력·턴 1회·혼란 제한은 tacticInfo(직접 발동과 공통), 선택은 pickTactic(AI와 공통)
         const opt = this.pickTactic(att, def);
         if (opt) {
-          att.qi -= opt.qi; att._tacTurn = this.turn; dmg = Math.round(dmg * this.tacMult(att, opt.mult));
+          att.qi -= opt.qi; att._tacTurn = this.turn; extraBase = Math.round(extraBase * this.tacMult(att, opt.mult)); dmg = Math.round(dmg * this.tacMult(att, opt.mult));
           this.gainMerit(att.officers[0], MERIT.tactic);
           if (opt.guard) att._guard = true;
           if (att.type === 'cav') att._cavTactic = true; // R10: 기병 전법 시 일기토 발동률 상승 (설계안 110행)
-          const note = opt.eff ? this._tacExtra(att, def, opt, dmg) : '';
+          const note = opt.eff ? this._tacExtra(att, def, opt, extraBase) : '';
           this.log(`【전법】${lead.name_ko}의 ${opt.name}! 야전에서 ${def.label}에 큰 피해${note}`, att.force === this.playerForce);
         }
       }
@@ -2079,13 +2081,15 @@ produceArms(id,key){const g=this;const c=g.cityById[id],a=this.armsInfo(c,key);i
       if (!this._tacTargetOk(u, d, tac)) return false; // R74: 전법별 대상 제약 (격돌 船 전용, 창·극·기병·목수 전법 선박 대상 불가 — 매뉴얼 대상표)
       const utA = UNIT_TYPES[u.type], utD = UNIT_TYPES[d.type];
       let dmg = Math.round(u.troops * 0.05 * utA.atk * (0.7 + lead.war/150) / utD.def * this.aptMult(u) * this.unitDmgMult(u) * this.unitItemAtk(u) * this.unitDefMult(d) * this.unitTechAtk(u) * this.unitRelMult(u) / this.unitRelMult(d) * (1 - 0.03 * this.techLv(d.force, '연병'))); // 야전 산식과 동일
-      if (isWaterAt(u.x, u.z)) dmg = Math.round(dmg * (utA.ship ? 1.3 : 0.7) * (this.unitHasSkill(u, '수완') ? 1.15 : 1));
+      let extraBase = Math.round(u.troops * 0.05 * utA.atk * (0.7 + lead.war/150) / utD.def * this.aptMult(u) * this.unitDmgMult(u) * this.unitItemAtk(u) * this.unitDefMult(d, false) * this.unitTechAtk(u) * this.unitRelMult(u) / this.unitRelMult(d) * (1 - 0.03 * this.techLv(d.force, '연병'))); // 야전 산식과 동일
+      if (isWaterAt(u.x, u.z)) { extraBase = Math.round(extraBase * (utA.ship ? 1.3 : 0.7) * (this.unitHasSkill(u, '수완') ? 1.15 : 1)); dmg = Math.round(dmg * (utA.ship ? 1.3 : 0.7) * (this.unitHasSkill(u, '수완') ? 1.15 : 1)); }
+      extraBase = Math.round(extraBase * this.tacMult(u, tac.mult));
       dmg = Math.round(dmg * this.tacMult(u, tac.mult));
       u.qi -= tac.qi; u._tacTurn = this.turn;
       this.gainMerit(u.officers[0], MERIT.tactic);
       d.troops = Math.max(0, d.troops - dmg);
       this.gainTechP(u.force, Math.min(40, Math.floor(dmg / 100)));
-      const note = tac.eff ? this._tacExtra(u, d, tac, dmg) : '';
+      const note = tac.eff ? this._tacExtra(u, d, tac, extraBase) : '';
       this.log(`【전법】${lead.name_ko}의 ${tac.name}! 야전에서 ${d.label}에 큰 피해 (-${dmg})${note}`, u.force === this.playerForce);
       if (d.troops <= 0) { this._rehomeOfficers(d, u.force, u.type === 'pike' ? 0.15 : 0); this.units = this.units.filter(x => x !== d); this.log(`${d.label} 부대가 전멸했습니다`, false); } // R111: 전법 격파 포박 (극병 가산)
       this.autosave();
