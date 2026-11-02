@@ -1,15 +1,15 @@
-import {mountDebate} from './debate-ui.js?v=r206';
-import {mountDuel} from './duel-ui.js?v=r206';
+import {mountDebate} from './debate-ui.js?v=r207';
+import {mountDuel} from './duel-ui.js?v=r207';
 // 진입점: 화면 전환·UI·지도 연결
-import { Map3D, toWorld } from './map3d.js?v=r206';
-import { Game, SAVE_KEY, RULES, forceColor, UNIT_TYPES, ARTS, OFFICES, restoreOfficer, FIELD_FACS, TRAPS, SHIP_TYPES, TAC_SHIP_OK, josa, josaRo, TECH_BRANCHES, TECH_P, TECH_GOLD, TECH_DESC, FACILITIES, ITEMS, SIEGE_BUILD, SHIP_BUILD, ARMS_BUILD, AB_BRANCHES, AB_P, AB_SKILL, AB_PICK } from './game.js?v=r206';
-import { aiThink } from './ai.js?v=r206';
-import { rosterRows, rosterOfficer, rosterRelations } from './officer-roster.js?v=r206';
+import { Map3D, toWorld } from './map3d.js?v=r207';
+import { Game, SAVE_KEY, RULES, forceColor, UNIT_TYPES, ARTS, OFFICES, restoreOfficer, FIELD_FACS, TRAPS, SHIP_TYPES, TAC_SHIP_OK, josa, josaRo, TECH_BRANCHES, TECH_P, TECH_GOLD, TECH_DESC, FACILITIES, ITEMS, SIEGE_BUILD, SHIP_BUILD, ARMS_BUILD, AB_BRANCHES, AB_P, AB_SKILL, AB_PICK } from './game.js?v=r207';
+import { aiThink } from './ai.js?v=r207';
+import { rosterRows, rosterOfficer, rosterRelations } from './officer-roster.js?v=r207';
 
 const $ = id => document.getElementById(id);
 let DATA = null, game = null, map = null, selectedUnit = null, autoTimer = null, pendingFire = null; // R15: 직접 전법·계략 대기
 
-const BUILD_ID = 'r206'; // 빌드 ID (index.html의 meta[name=build]와 같아야 함 - 오래된 캐시된 index와 새 스크립트의 혼합 감지)
+const BUILD_ID = 'r207'; // 빌드 ID (index.html의 meta[name=build]와 같아야 함 - 오래된 캐시된 index와 새 스크립트의 혼합 감지)
 function checkBuildSkew() {
   const idx = document.querySelector('meta[name="build"]')?.content;
   if (idx === BUILD_ID) { sessionStorage.removeItem('cheonha-xi-web.skew'); return; } // 일치하면 재시도 표식 해제
@@ -22,7 +22,7 @@ checkBuildSkew();
 async function loadData() {
   const [officers, skills, portraits, s184, s190, s251] = await Promise.all(
     ['data/officers670.json','data/skills.json','data/portraits.json','data/scenario-184.json','data/scenario-190.json','data/scenario-251.json']
-      .map(u => fetch(u + '?v=r206').then(r => r.json())));
+      .map(u => fetch(u + '?v=r207').then(r => r.json())));
   const byIdx = {};
   for (const o of officers) byIdx[o.idx] = o;
   DATA = { officers: byIdx, skills, portraits, scenarios: { '184': s184, '190': s190, '251': s251 } };
@@ -482,7 +482,7 @@ function tacticFailWhy(pf, hit) { // R74: 발동 실패 사유를 대상 종류�
 function onPick(nx, ny) {
   if (!game || game.over) return;
   const cmdMode = pendingFire == null && selectedUnit != null && !game.delegated && !!game.units.find(u => u.id === selectedUnit && u.force === game.playerForce); // R72c: 명령 모드 = 플레이어가 명령 가능한 아군 부대 선택 중일 때만 (적 부대 조회 중에는 목표 우선 아님)
-  const hit = map.pick(nx, ny, cmdMode); // R72b: 명령 모드에서는 도시·시설 목표를 부대 재선택보다 우선 (전법·계략 조준 중에는 부대 우선 유지)
+  const hit = map.pick(nx, ny, cmdMode, pendingFire && pendingFire.kind !== 'calm' ? pendingFire.uid : null); // R72b: 명령 모드에서는 도시·시설 목표를 부대 재선택보다 우선 (전법·계략 조준 중에는 부대 우선 유지)
   if (pendingFire) { // R15: 직접 전법·계략 대상 선택
     const pf = pendingFire; pendingFire = null;
     let ok = false;
