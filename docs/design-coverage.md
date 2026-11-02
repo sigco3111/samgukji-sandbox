@@ -383,3 +383,6 @@ seed91 184/190/251 각601·1801턴저장6건을main실제복원구간으로로�
 
 ## R206 실제환경 한계 점검
 정상RAF/DPR2/390소프트웨어WebGL6간격중앙1166.7ms·p951216.6ms,메뉴클릭확인16.318초로환경한정느림관측. 실기기성능통과아님. headed/백그라운드방지옵션제외/Ctrl+T및OS키입력경로도hiddenfalse·이벤트0으로실제숨김재현불가. 주입게이트와구분·동일재시도중단.[조건](environment-limits-r206.md).
+
+## R207 hostile aim caster exclusion, local candidate
+Natural190SunJian24 siege save exposed selfunit hiding citytarget at cameraangles0/1; two/three rotations had tiny validregion. Only hostile pendingaim skips its own caster; calm and other-unit priority unchanged. Pick8/full55 suites, real390citycenter fire naturallysucceeds(-339/qi-10/burn3), exactsaveContinue, enemyunit spiral retained, explicitqi80 selfcalm(-10/+20) retained. Rule/AI unchanged, notpublic/physicalphone. See targeting-r207.md. Manual campaign evidence separately records actualneutralcapture, siege, retreat and merchant recovery; not whole strategic completion.
