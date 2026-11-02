@@ -1,5 +1,5 @@
-import {supply} from './arms-policy.js?v=r244';
-import { SHIP_TYPES, TRAPS, FIELD_FACS, SIEGE_TYPES } from './game.js?v=r244';
+import {supply} from './arms-policy.js?v=r245';
+import { SHIP_TYPES, TRAPS, FIELD_FACS, SIEGE_TYPES } from './game.js?v=r245';
 // 세력 AI — 위임 시 플레이어 세력도 이 AI가 운영 (위임·샌드박스의 실질 주체)
 export function aiThink(game, fid, legion = null) { // legion 지정 시 그 군단 소속 도시만 운영 (도독 위임)
   const waiting = game.pendingDebate;
@@ -9,6 +9,7 @@ export function aiThink(game, fid, legion = null) { // legion 지정 시 그 군
   if (!f || !f.alive) return;
   let cities = game.forceCities(fid);
   if (legion) cities = cities.filter(c => legion.cities.includes(c.id));
+  const commands = u => u.force === fid && (!legion || game.unitLegion(u)?.id === legion.id);
   // R9: 치안 순찰 — 치안 80 미만 도시, 플레이어와 동일 비용 (금100·AP20)
   for (const c of cities) if ((c.security ?? 80) < 80) game.patrol(c.id);
   if (cities.length === 0) return;
@@ -73,7 +74,7 @@ export function aiThink(game, fid, legion = null) { // legion 지정 시 그 군
       if (!foes.length) continue;
       const myFacs = (game.fieldFacs ?? []).filter(x => x.force === fid && Math.hypot(x.x - c.lon, x.z - c.lat) < 3);
       const hasSupport = myFacs.some(x => x.type === '진' || x.type === '채' || x.type === '성채');
-      const idle = game.units.find(u => u.force === fid && !SHIP_TYPES.has(u.type) && !u.building && u.tx == null && u.troops >= 1500 && Math.hypot(u.x - c.lon, u.z - c.lat) < 3.5);
+      const idle = game.units.find(u => commands(u) && !SHIP_TYPES.has(u.type) && !u.building && u.tx == null && u.troops >= 1500 && Math.hypot(u.x - c.lon, u.z - c.lat) < 3.5);
       if (!idle) continue;
       // 적이 가까우면 함정부터 (도시 골드로 비용 지불 — 플레이어와 동일 규칙)
       const near = foes.some(v => Math.hypot(v.x - idle.x, v.z - idle.z) < 3);
@@ -249,7 +250,7 @@ export function aiThink(game, fid, legion = null) { // legion 지정 시 그 군
   }
   // R38 시험: 장기 공성 교착 완화 - 같은 도시를 10턴 이상 포위하고도 병력 우세가 없으면 가까운 아군 도시로 철수 (RULES.aiSiegeRelief)
   if (globalThis.__AI_SIEGE_RELIEF !== false) for (const u of game.units) {
-    if (u.force !== fid || u.targetCity == null) continue;
+    if (!commands(u) || u.targetCity == null) continue;
     const tc = game.cityById[u.targetCity];
     if (!tc || tc.force === u.force || Math.hypot(tc.lon - u.x, tc.lat - u.z) > (SHIP_TYPES.has(u.type) ? 1.7 : 1.2)) { u._siegeAge = 0; continue; } // R64: 수군은 수상 공성 사거리(1.6)에서 포위
     u._siegeAge = (u._siegeAge ?? 0) + 1;
@@ -260,7 +261,7 @@ export function aiThink(game, fid, legion = null) { // legion 지정 시 그 군
   }
   // 4) 목표 없는 야전 부대 재지정: 인접 적 도시가 약하면 공격, 아니면 귀환
   for (const u of game.units) {
-    if (u.force !== fid || u.targetCity != null || u.building) continue; // R63: 건설 중 부대는 재지정 금지 — 재지정(tx 설정) 시 fieldTurn이 건설을 중단시킴
+    if (!commands(u) || u.targetCity != null || u.building) continue; // R63: 건설 중 부대는 재지정 금지 — 재지정(tx 설정) 시 fieldTurn이 건설을 중단시킴
     if (u.targetFac != null) continue; // R77: 시설 공격 명령 진행 중이면 유지 (매 턴 재지정으로 명령이 흔들리지 않게)
     if (u.repairing != null) continue; // 보수 진행 중이면 유지 (완료·중단까지 재지정 금지)
     if (u.targetRepair != null) { // R88: 보수 이동 중 — 도착(인접)하면 보수 시작, 대상 소실·완치·조건 변화면 해제
@@ -300,7 +301,7 @@ export function aiThink(game, fid, legion = null) { // legion 지정 시 그 군
   }
   // 5) R15: AI도 같은 규칙으로 전법·계략 직접 발동 — 인접 적 부대·도시에 턴 1회, 비용·자격은 fireTactic/fireStrat과 동일
   for (const u of [...game.units]) {
-    if (u.force !== fid || !game.units.includes(u)) continue;
+    if (!commands(u) || !game.units.includes(u)) continue;
     const inR = (x, z) => Math.hypot(x - u.x, z - u.z) < 2.2;
     const eu = game.units.filter(x => x.force !== u.force && !game.isPeace(u.force, x.force) && inR(x.x, x.z)).sort((a, b) => (game.unitHasSkill(b, '미끼') ? 1 : 0) - (game.unitHasSkill(a, '미끼') ? 1 : 0))[0]; // R17: 미끼 특기 부대 우선 타겟팅 (모든 AI 세력 공통 경로)
     const ec = game.cities.find(c => c.force != null && c.force !== u.force && !game.isPeace(u.force, c.force) && inR(c.lon, c.lat));

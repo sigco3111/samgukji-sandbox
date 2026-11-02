@@ -701,6 +701,10 @@ export class Game {
   }
   _blocked(c) { return c && c.force === this.playerForce && !this.delegated && !this._legionActing && !!this.cityLegion(c.id); } // 군단 소속 도시는 수동 명령 불가
   cityLegion(cityId) { const f = this.forces[this.cityById[cityId]?.force]; return (f?.legions ?? []).find(l => l.cities.includes(cityId)) ?? null; }
+  unitLegion(u) { // Explicit dispatch ownership only; never infer old field units from location/officers.
+    if (!u || !Number.isSafeInteger(u.legionId)) return null;
+    return (this.forces[u.force]?.legions ?? []).find(l => l.id === u.legionId && this.activeGovernor(u.force,l.governor) && l.cities.some(id=>this.cityById[id]?.force===u.force)) ?? null;
+  }
   activeGovernor(fid, officerIdx) {
     const f = this.forces[fid], st = this.officers[officerIdx]?.state;
     return !!(f?.alive && st?.force === fid && ['ruler', 'taesu', 'serving'].includes(st.status));
@@ -709,6 +713,7 @@ export class Game {
     for (const f of Object.values(this.forces)) for (const l of [...(f.legions ?? [])]) {
       if (!this.activeGovernor(f.id, l.governor)) this.disbandLegion(f.id, l.id);
     }
+    for (const u of this.units) if (Object.hasOwn(u,'legionId') && !this.unitLegion(u)) delete u.legionId;
   }
   createLegion(governorIdx, cityIds, policy, target = null) { // 제2군단 이후 편성 (제1군단=군주 직할은 항상 플레이어)
     const o = this.officers[governorIdx];
@@ -730,6 +735,7 @@ export class Game {
     const i = (f?.legions ?? []).findIndex(l => l.id === legionId);
     if (i < 0) return false;
     const [l] = f.legions.splice(i, 1);
+    for (const u of this.units) if (u.force === fid && u.legionId === l.id) delete u.legionId;
     this.log(`【군단】${l.name} 해산 — 도시는 제1군단(직할)으로 복귀`, fid === this.playerForce);
     return true;
   }
@@ -1217,6 +1223,7 @@ produceArms(id,key){const g=this;const c=g.cityById[id],a=this.armsInfo(c,key);i
     for (const i of officerIdxs) this.officers[i].state.city = null;
     const unit = { id: this.nextUnitId++, force: c.force, officers: officerIdxs, troops, type, ...(this.econV === 2 ? { food: foodTake } : {}),
       x: sx, z: sz, path: [], tx: null, tz: null, targetCity: null, label: '', qi: 100, conf: 0 };
+    const legion = this.cityLegion(c.id); if (legion) unit.legionId = legion.id;
     unit.label = `${this.officers[officerIdxs[0]].name_ko} ${Math.round(troops/1000)}k`;
     this.units.push(unit);
     this.log(`${c.name_ko}에서 ${this.officers[officerIdxs[0]].name_ko}의 ${ut.name} ${troops} 출진`, c.force === this.playerForce);
