@@ -1,5 +1,5 @@
 // Read-only target navigation. The command engine still decides cost/effect/success.
-import {RULES,SHIP_TYPES,SIEGE_TYPES,TACTICS,STRATS,TRAPS} from './game.js?v=r245';
+import {RULES,SHIP_TYPES,SIEGE_TYPES,TACTICS,STRATS,TRAPS} from './game.js?v=r247';
 export function aimTargets(g,pf){
  const u=g.units.find(x=>x.id===pf.uid);if(!u||g.delegated||u.force!==g.playerForce||(u.conf??0)>0||!['tactic','fire','confuse','rumor','calm','sorcery','thunder'].includes(pf.kind))return[];if(pf.kind!=='tactic'&&(u._stratTurn??-1)===g.turn)return[];
  if(pf.kind!=='tactic'){const S=STRATS[pf.kind],cas=u.officers.map(i=>g.officers[i]).filter(Boolean);if((u.qi??100)<S.qi||Math.max(...cas.map(o=>o.int))<(S.minInt??0))return[];if(['sorcery','thunder'].includes(pf.kind)&&!cas.some(o=>o.skill===(pf.kind==='sorcery'?'요술':'낙뢰')))return[];}

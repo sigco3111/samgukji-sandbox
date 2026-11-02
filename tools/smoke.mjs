@@ -93,14 +93,16 @@ console.log('tactics fired:', tacN, '| stratagems fired:', stratN, '| field batt
       const f = gateF;
       const off = g.officers[f.ruler]; // 군주 고정: 무작위 소속 무장은 전사·포박으로 소속이 바뀔 수 있어 플레이크
       off.state = off.state ?? {};
-      off.state.items = [...new Set([...(off.state.items ?? []), 'yuxi'])].slice(0, 3);
+      const beforeItems = [...(off.state.items ?? [])];
+      off.state.items = ['yuxi', ...beforeItems.filter(id => id !== 'yuxi')].slice(0, 3); // Fixture must retain yuxi even when ruler already has 3 items.
+      if (!off.state.items.includes('yuxi')) throw new Error('옥새 fixture missing item');
       const before = f.techP ?? 0;
       f.ab = { '공격': 3, '방어': 3, '계략': 3, '내정': 3 }; // R13: 월 자동 능력연구의 기교P 소비를 차단해 결정적으로
       const sb0 = g.swearBrotherhood; g.swearBrotherhood = () => false; // R14: 월 자동 결연의 기교P 소비도 차단 (같은 플레이크 클래스)
       for (let t = 0; t < 3; t++) { g.endTurn((gg, fid) => { if (fid !== f.id) aiThink(gg, fid); }); if (g.pendingDuel) g.duelAuto(g.pendingDuel); if (g.pendingDebate) g.debateAuto(g.pendingDebate); } // 월 처리는 3순(1개월)마다. 대상 세력의 AI 기교 연구(techP 소비)는 차단해 결정적으로
       g.swearBrotherhood = sb0;
       if (!((f.techP ?? 0) >= before + 10)) { console.error('FAIL: 옥새 기교P 월+10', before, f.techP); process.exit(1); }
-      off.state.items = off.state.items.filter(i => i !== 'yuxi');
+      off.state.items = beforeItems;
       console.log('옥새 기교P 확인:', before, '→', f.techP);
     }
     // 상인: 환율 범위·매입/매각 수치
@@ -1224,9 +1226,9 @@ if (g.units.find(u => u.id === 9999) && g.units.find(u => u.id === 9999).qi === 
   if (!mapSrc.includes('setSeason(month)') || !mapSrc.includes('baseColors')) { console.log('FAIL: R16 setSeason 없음'); process.exit(1); }
   if (!mainSrc.includes('map.setSeason?.(game.month)')) { console.log('FAIL: R16 계절 미호출'); process.exit(1); }
   // 일기토·설전 초상화 연출
-  if (!readFileSync('js/duel-ui.js','utf8').includes('portraitCss(po.idx)') || !readFileSync('js/debate-ui.js','utf8').includes('portraitCss(po.idx)')) { console.log('FAIL: R16 대결 초상화 없음'); process.exit(1); }
+  if (!(readFileSync('js/duel-ui.js','utf8').includes('portraitCss(o.idx)') && readFileSync('js/duel-ui.js','utf8').includes('contest-side-portrait')) || !(readFileSync('js/debate-ui.js','utf8').includes('portraitCss(o.idx)') && readFileSync('js/debate-ui.js','utf8').includes('contest-side-portrait'))) { console.log('FAIL: R16 대결 초상화 없음'); process.exit(1); }
   
-// R199: old main-only check replaced above after extracting duel UI. if (!mainSrc.includes('portraitCss(po.idx)') || !readFileSync('js/debate-ui.js','utf8').includes('portraitCss(po.idx)')) { console.log('FAIL: R16 대결 초상화 없음'); process.exit(1); }
+// R199: old main-only check replaced above after extracting duel UI. if (!mainSrc.includes('portraitCss(po.idx)') || !(readFileSync('js/debate-ui.js','utf8').includes('portraitCss(o.idx)') && readFileSync('js/debate-ui.js','utf8').includes('contest-side-portrait'))) { console.log('FAIL: R16 대결 초상화 없음'); process.exit(1); }
   // 조사: 변환된 메시지에 괄호 조사 잔류 금지 (R15 게이트 시나리오 로그 검사)
   const g24 = new Game(JSON.parse(JSON.stringify(scen)), JSON.parse(JSON.stringify(officers)), {}, 0);
   g24.units = [];
