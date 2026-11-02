@@ -2673,7 +2673,9 @@ d.done = true;
         cities: this.cities, forces: this.forces, units: this.units, nextUnitId: this.nextUnitId, fieldFacs: this.fieldFacs, nextFacId: this.nextFacId,
         playerForce: this.playerForce, delegated: this.delegated, deadAck: this.deadAck, logs: this.logs.slice(-60), diplo: this.diplo, itemPool: this.itemPool, chronicle: this.chronicle, over: this.over, unified: this.unified, // R14
         pendingDiplo: this.pendingDiplo ?? [], // R123: 보류 외교 제안 영속 — reload 후에도 결정 대기 복원 (효과는 resolveDiplo에서만 적용, 복원 시 재적용 없음)
-        pendingDuel: this.duelSnapshot(), // R197: live unit references are encoded as IDs
+        pendingDebate: this.debateSnapshot(),
+        
+pendingDuel: this.duelSnapshot(), // R197: live unit references are encoded as IDs
         
 pendingJoin: this.pendingJoin ?? null, // R128: 참가 요청 영속
         monthlyReview: this.monthlyReview ?? null, reviewBase: this._reviewBase ?? null, // R132: 월 결산 영속 — 턴 경계 전 reload 시 요청 소실 방지 (복원 시 유효성 검증은 로드 경로)
