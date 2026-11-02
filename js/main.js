@@ -1,14 +1,14 @@
-import {mountDuel} from './duel-ui.js?v=r199';
+import {mountDuel} from './duel-ui.js?v=r200';
 // 진입점: 화면 전환·UI·지도 연결
-import { Map3D, toWorld } from './map3d.js?v=r199';
-import { Game, SAVE_KEY, RULES, forceColor, UNIT_TYPES, ARTS, OFFICES, restoreOfficer, FIELD_FACS, TRAPS, SHIP_TYPES, TAC_SHIP_OK, josa, josaRo, TECH_BRANCHES, TECH_P, TECH_GOLD, TECH_DESC, FACILITIES, ITEMS, SIEGE_BUILD, SHIP_BUILD, ARMS_BUILD, AB_BRANCHES, AB_P, AB_SKILL, AB_PICK } from './game.js?v=r199';
-import { aiThink } from './ai.js?v=r199';
-import { rosterRows, rosterOfficer, rosterRelations } from './officer-roster.js?v=r199';
+import { Map3D, toWorld } from './map3d.js?v=r200';
+import { Game, SAVE_KEY, RULES, forceColor, UNIT_TYPES, ARTS, OFFICES, restoreOfficer, FIELD_FACS, TRAPS, SHIP_TYPES, TAC_SHIP_OK, josa, josaRo, TECH_BRANCHES, TECH_P, TECH_GOLD, TECH_DESC, FACILITIES, ITEMS, SIEGE_BUILD, SHIP_BUILD, ARMS_BUILD, AB_BRANCHES, AB_P, AB_SKILL, AB_PICK } from './game.js?v=r200';
+import { aiThink } from './ai.js?v=r200';
+import { rosterRows, rosterOfficer, rosterRelations } from './officer-roster.js?v=r200';
 
 const $ = id => document.getElementById(id);
 let DATA = null, game = null, map = null, selectedUnit = null, autoTimer = null, pendingFire = null; // R15: 직접 전법·계략 대기
 
-const BUILD_ID = 'r199'; // 빌드 ID (index.html의 meta[name=build]와 같아야 함 - 오래된 캐시된 index와 새 스크립트의 혼합 감지)
+const BUILD_ID = 'r200'; // 빌드 ID (index.html의 meta[name=build]와 같아야 함 - 오래된 캐시된 index와 새 스크립트의 혼합 감지)
 function checkBuildSkew() {
   const idx = document.querySelector('meta[name="build"]')?.content;
   if (idx === BUILD_ID) { sessionStorage.removeItem('cheonha-xi-web.skew'); return; } // 일치하면 재시도 표식 해제
@@ -21,7 +21,7 @@ checkBuildSkew();
 async function loadData() {
   const [officers, skills, portraits, s184, s190, s251] = await Promise.all(
     ['data/officers670.json','data/skills.json','data/portraits.json','data/scenario-184.json','data/scenario-190.json','data/scenario-251.json']
-      .map(u => fetch(u + '?v=r199').then(r => r.json())));
+      .map(u => fetch(u + '?v=r200').then(r => r.json())));
   const byIdx = {};
   for (const o of officers) byIdx[o.idx] = o;
   DATA = { officers: byIdx, skills, portraits, scenarios: { '184': s184, '190': s190, '251': s251 } };
@@ -320,12 +320,12 @@ function showDebate() { // R11: 설전 모달
       <p>화술: ${Object.keys(game.debateCardList()).map(cardBtn).join(' ')}</p>
       <p style="font-size:11px;color:#999">반박=상대 공격 무효+반격 · 경청=논리 회복 · 도발=다음 화술 봉인 · 🔒는 지력 부족(서적 보유 시 해금)</p>
       <p><button class="cmd" id="debate-auto">위임 (자동)</button></p></div>`;
-    m.querySelectorAll('.debate-card').forEach(b => b.onclick = () => { const sel = b.dataset.c; game.debateTick(d, pk === 'a' ? sel : game.debatePolicy(d, 'a'), pk === 'a' ? game.debatePolicy(d, 'b') : sel); after(); }); // 플레이어 카드는 플레이어 측(pk)에 배정
+    m.querySelectorAll('.debate-card').forEach(b => b.onclick = () => { const sel = b.dataset.c; game.debateTick(d, pk === 'a' ? sel : game.debatePolicy(d, 'a'), pk === 'a' ? game.debatePolicy(d, 'b') : sel); game.autosave(); after(); }); // 플레이어 카드는 플레이어 측(pk)에 배정
     $('debate-auto').onclick = () => { game.debateAuto(d); after(); };
   };
   const after = () => {
     if (game.pendingDebate) render();
-    else { m.classList.add('hidden'); refreshAll(); refreshOpenPanel(); checkGameOver(); }
+    else { m.classList.add('hidden'); afterDiplo(); }
   };
   render();
 }
@@ -1218,9 +1218,11 @@ async function boot() {
       for (const [i, st] of Object.entries(d.officerStates)) if (DATA.officers[i]) restoreOfficer(DATA.officers[i], st); // R84: 복원 공통화 (R13 연구 + 관직 능력 가산 재적용)
       if (g.pendingJoin != null && (!g.forces[g.pendingJoin]?.alive || g.pendingJoin === g.playerForce)) { g.log(`참가 요청한 ${josa('【' + g.forceName(g.pendingJoin) + '】군', ['이','가'])} 멸망하여 참가 요청이 취소되었습니다. 다른 세력을 선택해 주세요.`, true); g.pendingJoin = null; } // R128: 로드 시 무효 참가 요청 정리 — 중복 인계 없음 (인계는 턴 경계 1회)
       g._reconcileOfficerRosters(); // R96: 구 저장의 로스터 누락·타 세력 로스터 잔류 무장 복귀 (멱등)
+      g.restoreDebate(d.pendingDebate); // R200: validate already-paid negotiation context
       g.restoreDuel(d.pendingDuel); // R197: reattach only after canonical unit/officer reconciliation
       game = g; enterGame(); refreshAll(); checkGameOver(); // R14: 저장 시점이 종료 상태면 모달 재표시
       if (game.pendingDuel) showDuel();
+      else if (game.pendingDebate) showDebate();
       else if ((game.pendingDiplo ?? []).length) showDiploIn(); // R123: 저장 시점의 보류 제안은 효과 재적용 없이 결정 모달만 복원
       if (game.delegated) setAuto(true);
     };
