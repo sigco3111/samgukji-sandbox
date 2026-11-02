@@ -1,6 +1,6 @@
 // 3D 저폴리 지도 엔진 (Three.js) - 고정 등각 아이소메트릭 + 계단식 지형 + 성곽/숲
 import * as THREE from 'three';
-import { loadGLBAssets, applyEnvironment } from './assets-3d.js?v=r206';
+import { loadGLBAssets, applyEnvironment } from './assets-3d.js?v=r207';
 
 // R139: 결정적 전역 시설 배치. 지형·성곽·야전 시설·기배치 시설은 비용이 아닌 제외 조건.
 // 자리가 없으면 도시 상단 요약 표식으로 표현하며 수상에 육상 건물을 강제 배치하지 않는다.
@@ -688,12 +688,13 @@ export class Map3D {
   }
   removeUnit(id) { const m = this.unitMeshes[id]; if (m) { this.unitGroup.remove(m.group); delete this.unitMeshes[id]; } }
 
-  pick(nx, ny, preferTarget = false) {
+  pick(nx, ny, preferTarget = false, excludeUnitId = null) {
     this.raycaster.setFromCamera(new THREE.Vector2(nx, ny), this.camera);
     // 부대 우선: 광선이 부대 중심(몸통/기치 높이) 1.3 유닛 이내를 지나면 도시보다 부대를 선택
     const v = new THREE.Vector3();
     let bestU = null, bestD = 1.3;
     for (const id of Object.keys(this.unitMeshes)) {
+      if (excludeUnitId != null && Number(id) === excludeUnitId) continue; // R207: hostile aim cannot target its own caster
       const g = this.unitMeshes[id].group;
       for (const h of [0.7, 1.7]) {
         v.set(g.position.x, g.position.y + h, g.position.z);
