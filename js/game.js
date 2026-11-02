@@ -1712,7 +1712,8 @@ produceArms(id,key){const g=this;const c=g.cityById[id],a=this.armsInfo(c,key);i
       if (!SHIP_TYPES.has(u.type)) speed *= this.fieldSlow(u); // R26: 토루
       if (!SHIP_TYPES.has(u.type) && this.passAt(u.x, u.z)) speed *= this.passMult(u); // 간도(산악 샛길) 감속 (자체 정의)
       if (!SHIP_TYPES.has(u.type) && isRiverAt(u.x, u.z)) speed *= this.riverMult(u); // R17/R23: 육군 강 도하 감속 - 깊은 강 0.35·여울 0.6·난소행군 0.8 (자체 수치)
-      const nx = u.x + dx/d*speed, nz = u.z + dz/d*speed;
+      const step = Math.min(speed, d); // R209: 가까운 경유점을 넘겨 왕복하지 않도록 실제 남은 거리로 제한
+      const nx = u.x + dx/d*step, nz = u.z + dz/d*step;
       if (SHIP_TYPES.has(u.type) && !isWaterAt(nx, nz)) { // 수군: 강·바다에서만 기동
         u.path = [];
         const tc2 = u.targetCity != null ? this.cityById[u.targetCity] : null;
