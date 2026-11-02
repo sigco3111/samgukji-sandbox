@@ -1,3 +1,5 @@
+import {duelSnapshot,restoreDuel} from './duel-save.js?v=r197';
+
 // 게임 상태·턴 엔진 (삼국지11 기본 구조의 단순화 1차 구현)
 export const SAVE_KEY = 'cheonha-xi-web.save.v1';
 export const FORCE_COLORS = ['#4a7fd4','#d44a4a','#4ad47f','#d4a44a','#9a4ad4','#4ad4d4','#d44a8f','#8fd44a','#d47f4a','#6a6ad4','#d4d44a','#4a9a6a','#c46a4a','#7a4a2a','#2a7a8a','#8a2a4a','#5a8a2a','#aa6aaa','#4a5a9a','#9a8a3a','#3a7a4a','#b45a7a','#6aaac4','#c48a3a','#7a3a9a','#3a9a8a','#aa4a3a','#5a7a2a','#8a6aaa','#4a8aaa','#ca7a5a','#3a6a3a','#9a4a6a','#6a8a4a','#4a4aaa','#aa9a3a','#3a8a6a','#b46a8a','#5a9aca'];
@@ -2446,7 +2448,11 @@ produceArms(id,key){const g=this;const c=g.cityById[id],a=this.armsInfo(c,key);i
     return this.pendingDuel;
   }
   duelOfficer(d, k) { const s = d[k]; return this.officers[s.offs[s.cur]]; }
-  duelPolicy(d, k) { // AI 방침 (플레이어 위임 시에도 동일 적용)
+  duelSnapshot() { return duelSnapshot.call(this); }
+  
+  restoreDuel(raw) { return restoreDuel.call(this,raw); }
+  
+duelPolicy(d, k) { // AI 방침 (플레이어 위임 시에도 동일 적용)
     const s = d[k], ok = k === 'a' ? 'b' : 'a', opp = d[ok];
     const myWar = this.effWar(this.duelOfficer(d, k)), opWar = this.effWar(this.duelOfficer(d, ok));
     if (s.spirit >= 300) return { stance: s.stance, cmd: '무쌍' };
@@ -2653,7 +2659,9 @@ produceArms(id,key){const g=this;const c=g.cityById[id],a=this.armsInfo(c,key);i
         cities: this.cities, forces: this.forces, units: this.units, nextUnitId: this.nextUnitId, fieldFacs: this.fieldFacs, nextFacId: this.nextFacId,
         playerForce: this.playerForce, delegated: this.delegated, deadAck: this.deadAck, logs: this.logs.slice(-60), diplo: this.diplo, itemPool: this.itemPool, chronicle: this.chronicle, over: this.over, unified: this.unified, // R14
         pendingDiplo: this.pendingDiplo ?? [], // R123: 보류 외교 제안 영속 — reload 후에도 결정 대기 복원 (효과는 resolveDiplo에서만 적용, 복원 시 재적용 없음)
-        pendingJoin: this.pendingJoin ?? null, // R128: 참가 요청 영속
+        pendingDuel: this.duelSnapshot(), // R197: live unit references are encoded as IDs
+        
+pendingJoin: this.pendingJoin ?? null, // R128: 참가 요청 영속
         monthlyReview: this.monthlyReview ?? null, reviewBase: this._reviewBase ?? null, // R132: 월 결산 영속 — 턴 경계 전 reload 시 요청 소실 방지 (복원 시 유효성 검증은 로드 경로)
         officerStates: Object.fromEntries(Object.entries(this.officers).filter(([,o]) => o.state).map(([i,o]) => [i, o.state])),
       };
