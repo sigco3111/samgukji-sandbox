@@ -1,0 +1,1 @@
+import fs from'node:fs';import assert from'node:assert/strict';const s=fs.readFileSync('js/debate-ui.js','utf8');for(const x of ['aria-live="polite"','aria-valuenow','if(!active()||b.disabled)return','game.debateAuto(d);save();after()','화술 봉인 중','textContent=d.log.slice(-3)'])assert.ok(s.includes(x),x);console.log('R202 6 source gates PASS');

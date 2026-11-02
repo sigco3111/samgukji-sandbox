@@ -1,0 +1,1 @@
+import fs from'node:fs';import assert from'node:assert/strict';const s=fs.readFileSync('js/main.js','utf8');for(const x of['city-join-stable','city-live-body','b.dataset.force!==String(offeredForce)','game.pendingJoin = offeredForce','!join.isConnected','c.force!==offeredForce'])assert.ok(s.includes(x),x);console.log('R205 stable join 6 source gates PASS');

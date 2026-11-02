@@ -123,8 +123,10 @@ console.log('tactics fired:', tacN, '| stratagems fired:', stratN, '| field batt
 
     // === 군사·군단 ===
     {
-      const f = gateF;
-      const serving = Object.values(g.officers).filter(o => o.state?.force === f.id);
+      // Do not select a captive/field/dead officer from the preceding random war.
+      const g = new Game(scen, structuredClone(officers), {}, 0);
+      const f = g.forces[0];
+      const serving = Object.values(g.officers).filter(o => o.state?.force === f.id && ['ruler','taesu','serving'].includes(o.state.status));
       const low = serving.find(o => o.int < 70), high = serving.sort((a, b) => b.int - a.int)[0];
       if (low && g.appointAdvisor(low.idx)) { console.error('FAIL: 지력70 미만 군사 임명'); process.exit(1); }
       if (!g.appointAdvisor(high.idx) || f.advisor !== high.idx) { console.error('FAIL: 군사 임명'); process.exit(1); }
@@ -1222,9 +1224,9 @@ if (g.units.find(u => u.id === 9999) && g.units.find(u => u.id === 9999).qi === 
   if (!mapSrc.includes('setSeason(month)') || !mapSrc.includes('baseColors')) { console.log('FAIL: R16 setSeason 없음'); process.exit(1); }
   if (!mainSrc.includes('map.setSeason?.(game.month)')) { console.log('FAIL: R16 계절 미호출'); process.exit(1); }
   // 일기토·설전 초상화 연출
-  if (!readFileSync('js/duel-ui.js','utf8').includes('portraitCss(po.idx)') || !mainSrc.includes('portraitCss(P.o)')) { console.log('FAIL: R16 대결 초상화 없음'); process.exit(1); }
+  if (!readFileSync('js/duel-ui.js','utf8').includes('portraitCss(po.idx)') || !readFileSync('js/debate-ui.js','utf8').includes('portraitCss(po.idx)')) { console.log('FAIL: R16 대결 초상화 없음'); process.exit(1); }
   
-// R199: old main-only check replaced above after extracting duel UI. if (!mainSrc.includes('portraitCss(po.idx)') || !mainSrc.includes('portraitCss(P.o)')) { console.log('FAIL: R16 대결 초상화 없음'); process.exit(1); }
+// R199: old main-only check replaced above after extracting duel UI. if (!mainSrc.includes('portraitCss(po.idx)') || !readFileSync('js/debate-ui.js','utf8').includes('portraitCss(po.idx)')) { console.log('FAIL: R16 대결 초상화 없음'); process.exit(1); }
   // 조사: 변환된 메시지에 괄호 조사 잔류 금지 (R15 게이트 시나리오 로그 검사)
   const g24 = new Game(JSON.parse(JSON.stringify(scen)), JSON.parse(JSON.stringify(officers)), {}, 0);
   g24.units = [];

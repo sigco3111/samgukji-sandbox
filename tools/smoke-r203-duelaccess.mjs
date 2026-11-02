@@ -1,0 +1,1 @@
+import fs from'node:fs';import assert from'node:assert/strict';const s=fs.readFileSync('js/duel-ui.js','utf8');for(const x of ['role="progressbar"','aria-valuenow','aria-valuemax','aria-live="off"','duel-reasons','aria-pressed','if(game.saveFailed||!active())return','무기 명품 필요','활 명품 필요'])assert.ok(s.includes(x),x);console.log('R203 9 source gates PASS');

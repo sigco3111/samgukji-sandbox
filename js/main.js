@@ -1,14 +1,15 @@
-import {mountDuel} from './duel-ui.js?v=r200';
+import {mountDebate} from './debate-ui.js?v=r206';
+import {mountDuel} from './duel-ui.js?v=r206';
 // 진입점: 화면 전환·UI·지도 연결
-import { Map3D, toWorld } from './map3d.js?v=r200';
-import { Game, SAVE_KEY, RULES, forceColor, UNIT_TYPES, ARTS, OFFICES, restoreOfficer, FIELD_FACS, TRAPS, SHIP_TYPES, TAC_SHIP_OK, josa, josaRo, TECH_BRANCHES, TECH_P, TECH_GOLD, TECH_DESC, FACILITIES, ITEMS, SIEGE_BUILD, SHIP_BUILD, ARMS_BUILD, AB_BRANCHES, AB_P, AB_SKILL, AB_PICK } from './game.js?v=r200';
-import { aiThink } from './ai.js?v=r200';
-import { rosterRows, rosterOfficer, rosterRelations } from './officer-roster.js?v=r200';
+import { Map3D, toWorld } from './map3d.js?v=r206';
+import { Game, SAVE_KEY, RULES, forceColor, UNIT_TYPES, ARTS, OFFICES, restoreOfficer, FIELD_FACS, TRAPS, SHIP_TYPES, TAC_SHIP_OK, josa, josaRo, TECH_BRANCHES, TECH_P, TECH_GOLD, TECH_DESC, FACILITIES, ITEMS, SIEGE_BUILD, SHIP_BUILD, ARMS_BUILD, AB_BRANCHES, AB_P, AB_SKILL, AB_PICK } from './game.js?v=r206';
+import { aiThink } from './ai.js?v=r206';
+import { rosterRows, rosterOfficer, rosterRelations } from './officer-roster.js?v=r206';
 
 const $ = id => document.getElementById(id);
 let DATA = null, game = null, map = null, selectedUnit = null, autoTimer = null, pendingFire = null; // R15: 직접 전법·계략 대기
 
-const BUILD_ID = 'r200'; // 빌드 ID (index.html의 meta[name=build]와 같아야 함 - 오래된 캐시된 index와 새 스크립트의 혼합 감지)
+const BUILD_ID = 'r206'; // 빌드 ID (index.html의 meta[name=build]와 같아야 함 - 오래된 캐시된 index와 새 스크립트의 혼합 감지)
 function checkBuildSkew() {
   const idx = document.querySelector('meta[name="build"]')?.content;
   if (idx === BUILD_ID) { sessionStorage.removeItem('cheonha-xi-web.skew'); return; } // 일치하면 재시도 표식 해제
@@ -21,7 +22,7 @@ checkBuildSkew();
 async function loadData() {
   const [officers, skills, portraits, s184, s190, s251] = await Promise.all(
     ['data/officers670.json','data/skills.json','data/portraits.json','data/scenario-184.json','data/scenario-190.json','data/scenario-251.json']
-      .map(u => fetch(u + '?v=r200').then(r => r.json())));
+      .map(u => fetch(u + '?v=r206').then(r => r.json())));
   const byIdx = {};
   for (const o of officers) byIdx[o.idx] = o;
   DATA = { officers: byIdx, skills, portraits, scenarios: { '184': s184, '190': s190, '251': s251 } };
@@ -211,7 +212,7 @@ function refreshLog() {
 // === 턴·자동 진행 ===
 function doTurn() {
   if (!game || game.over) return;
-  if ((game.pendingDiplo ?? []).length) { game.log('보류 중인 외교 제안을 먼저 결정해 주세요', true); refreshLog(); showDiploIn(); return; } // R123: 보류 중 턴 진행 불가 — 결정 모달 재표시
+  if ((game.pendingDiplo ?? []).length) { game.log('보류 중인 외교 제안을 먼저 결정해 주세요', true); refreshLog(); showPendingDecision(); return; } // R123: 보류 중 턴 진행 불가 — 결정 모달 재표시
   game.endTurn(aiThink);
   refreshAll();
   if (selectedUnit != null && !$('panel').classList.contains('hidden')) { // 턴 처리 후 열려 있는 부대 패널 갱신 (건설 완료·병력·기력 반영)
@@ -241,9 +242,15 @@ function doTurn() {
   if ($('panel').dataset.view === 'tech' && !$('panel').classList.contains('hidden')) showTech(); // R156: 턴 후 연구비·기교P·가능상태 갱신, showTech가 스크롤 보존
   if ($('panel').dataset.view === 'roster' && !$('panel').classList.contains('hidden')) $('panel').refreshRoster?.();
   checkGameOver();
-  if (game.pendingDuel) showDuel(); // R10: 일기토 모달
-  if (game.pendingDebate) showDebate(); // R11: 설전 모달
-  if ((game.pendingDiplo ?? []).length) showDiploIn(); // R123: 턴 처리 중 도착한 수신 외교 제안
+  showPendingDecision(); // R201: one mandatory decision owns the modal
+}
+
+function showPendingDecision() {
+  if (game.over || (game.forces?.[game.playerForce]?.alive === false && !game.deadAck)) { checkGameOver(); return true; } // R201: never cover end/extinction choice
+  if (game.pendingDuel) { showDuel(); return true; }
+  if (game.pendingDebate) { showDebate(); return true; }
+  if ((game.pendingDiplo ?? []).length) { showDiploIn(); return true; }
+  return false;
 }
 
 // === R123: 수신 외교 제안 결정 모달 (보류 큐 FIFO — 한 턴 복수 제의도 순서대로 명시 결정) ===
@@ -265,8 +272,7 @@ function showDiploIn() {
 }
 function afterDiplo() { // 결정 후속: 로그·HUD 갱신 → 거절에 상대가 설전 도전하면 설전 모달 → 남은 제안 이어서
   refreshLog(); refreshHud(); refreshOpenPanel();
-  if (game.pendingDebate) { showDebate(); return; }
-  if ((game.pendingDiplo ?? []).length) { showDiploIn(); return; }
+  if (showPendingDecision()) return;
   refreshAll(); checkGameOver(); // 항복 수락 등으로 세력이 사라졌다면 필수 선택을 즉시 표시
 }
 // === R10 / R199: real-time duel UI; combat engine and AI remain bout based ===
@@ -277,7 +283,7 @@ function showDuel() {
   const ownerGame=game;
   duelView=mountDuel({game:ownerGame,d,m:$('modal'),portraitCss,
     save:()=>ownerGame.autosave(),
-    finish:()=>{ $('modal').classList.add('hidden'); refreshAll(); refreshOpenPanel(); checkGameOver(); }
+    finish:()=>{ $('modal').classList.add('hidden'); refreshAll(); refreshOpenPanel(); checkGameOver(); showPendingDecision(); }
   });
 }
 function showSwear(c) { // R12: 의형제 결연 모달
@@ -296,38 +302,11 @@ function showSwear(c) { // R12: 의형제 결연 모달
   };
   render(new Set());
 }
-function showDebate() { // R11: 설전 모달
-  const d = game.pendingDebate; if (!d) return;
-  const m = $('modal'); m.classList.remove('hidden');
-  const pk = d.ctx?.fid === game.playerForce ? 'a' : (d.ctx?.tid === game.playerForce ? 'b' : 'a'), ek = pk === 'a' ? 'b' : 'a'; // 제의측/대상측 세력으로 플레이어 측 판정
-  const render = () => {
-    const P = d[pk], E = d[ek];
-    const po = game.officers[P.o], eo = game.officers[E.o];
-    const bar = (v, max, color) => `<span style="display:inline-block;width:120px;height:10px;background:#333;vertical-align:middle"><span style="display:block;width:${Math.max(0, Math.min(100, v / max * 100))}%;height:100%;background:${color}"></span></span>`;
-    const ctxName = { alliance: '동맹 제의', truce: '정전 요청', recruit: '등용' }[d.ctx?.kind] ?? '협상';
-    const cardBtn = c => {
-      const owned = !!game.debateCards(P.o)[c];
-      const ok = game.debateCardUsable(d, pk, c);
-      const cd = (P.cds[c] ?? 0) > 0 ? ` (쿨 ${P.cds[c]})` : '';
-      return `<button class="cmd debate-card" data-c="${c}" ${ok ? '' : 'disabled'}>${c}${cd}${owned ? '' : ' 🔒'}</button>`;
-    };
-    m.innerHTML = `<div class="box" style="min-width:420px">
-      <h3 style="color:#6cf;text-align:center">설전 (${d.bout}합) <span style="font-size:12px;color:#aaa">${ctxName}</span></h3>
-      <p style="text-align:center;margin:4px 0"><span class="pimg" style="${portraitCss(P.o)};display:inline-block;width:64px;height:64px;border:2px solid #47d;border-radius:4px;vertical-align:middle"></span> <b style="font-size:20px;color:#6cf;vertical-align:middle"> VS </b> <span class="pimg" style="${portraitCss(E.o)};display:inline-block;width:64px;height:64px;border:2px solid #d44;border-radius:4px;vertical-align:middle"></span><br><b>${po.name_ko}</b> vs <b>${eo.name_ko}</b></p>
-      <p>${po.name_ko} 논리 ${bar(P.hp, 100, '#d44')} ${Math.max(0, P.hp)}${P.seal ? ' · 봉인' : ''}<br>
-      ${eo.name_ko} 논리 ${bar(E.hp, 100, '#d44')} ${Math.max(0, E.hp)}${E.seal ? ' · 봉인' : ''}</p>
-      <p style="font-size:12px;color:#cbb;min-height:54px">${d.log.slice(-3).join('<br>')}</p>
-      <p>화술: ${Object.keys(game.debateCardList()).map(cardBtn).join(' ')}</p>
-      <p style="font-size:11px;color:#999">반박=상대 공격 무효+반격 · 경청=논리 회복 · 도발=다음 화술 봉인 · 🔒는 지력 부족(서적 보유 시 해금)</p>
-      <p><button class="cmd" id="debate-auto">위임 (자동)</button></p></div>`;
-    m.querySelectorAll('.debate-card').forEach(b => b.onclick = () => { const sel = b.dataset.c; game.debateTick(d, pk === 'a' ? sel : game.debatePolicy(d, 'a'), pk === 'a' ? game.debatePolicy(d, 'b') : sel); game.autosave(); after(); }); // 플레이어 카드는 플레이어 측(pk)에 배정
-    $('debate-auto').onclick = () => { game.debateAuto(d); game.autosave(); after(); };
-  };
-  const after = () => {
-    if (game.pendingDebate) render();
-    else { m.classList.add('hidden'); afterDiplo(); }
-  };
-  render();
+function showDebate() {
+  const d=game.pendingDebate;if(!d)return;
+  duelView?.dispose();duelView=null;
+  const ownerGame=game;
+  mountDebate({game:ownerGame,d,m:$('modal'),portraitCss,save:()=>ownerGame.autosave(),finish:()=>{$('modal').classList.add('hidden');afterDiplo()}});
 }
 function autoAwaitingDecision(game) {
   const f = game.forces[game.playerForce];
@@ -368,11 +347,13 @@ function showOfficerRoster() {
 }
 function showReview() { // R132: 월 결산 — 지난달 보유량 증감 + 그달 주요 기록 (수입·지출 총계가 아닌 총보유량 비교 — 점령·소속 변경 포함. 예상 수지는 세력 현황 참조)
   const rvw = game.monthlyReview; const m = $('modal'); m.classList.remove('hidden');
-  if (!rvw) { m.innerHTML = `<div class="box"><h3>월 결산</h3><p>아직 결산된 월이 없습니다. 첫 월이 지나면 결산이 표시됩니다.</p><button id="rv-close" style="margin-top:8px">닫기</button></div>`; $('rv-close').onclick = () => m.classList.add('hidden'); return; }
+  if (!rvw) { m.innerHTML = `<div class="box"><h3>월 결산</h3><p>현재 세력의 결산이 없습니다. 새 게임·세력 전환 후 첫 월이 지나면 결산이 표시됩니다.</p><button id="rv-close" style="margin-top:8px">닫기</button></div>`; $('rv-close').onclick = () => m.classList.add('hidden'); return; }
+  const reportFid = rvw.fid ?? game._reviewBase?.fid;
+  const reportOwner = reportFid != null ? game.forceName(reportFid)+' · ' : '세력 미확인 · ';
   const rows = [['금', 'gold'], ['병량', 'food'], ['병사(주둔)', 'troops'], ['병사(출진)', 'field'], ['도시', 'cities'], ['부대', 'units'], ['무장', 'officers']];
   const tr = ([label, k]) => { const a = rvw.from?.[k], b = rvw.to[k]; if (a == null) return `<tr><td>${label}</td><td colspan="3" style="text-align:right;color:#998">${b.toLocaleString()}</td></tr>`; const d = b - a; const cl = d > 0 ? '#8f8' : d < 0 ? '#f88' : '#998'; return `<tr><td>${label}</td><td style="text-align:right">${a.toLocaleString()}</td><td style="text-align:right">${b.toLocaleString()}</td><td style="text-align:right;color:${cl}">${d > 0 ? '+' : ''}${d.toLocaleString()}</td></tr>`; };
   const recs = (game.chronicle ?? []).filter(c => c.y === rvw.y && c.m === rvw.m).slice(-8).reverse();
-  m.innerHTML = `<div class="box" style="max-height:72vh;max-width:560px;display:flex;flex-direction:column"><h3>${rvw.y}년 ${rvw.m}월 결산</h3>
+  m.innerHTML = `<div class="box" style="max-height:72vh;max-width:560px;display:flex;flex-direction:column"><h3>${reportOwner}${rvw.y}년 ${rvw.m}월 결산</h3>
     <p style="font-size:11px;color:#aa9;margin:2px 0">보유량 증감 — 월초 대비 월말 총보유량 비교입니다. 점령·소속 변경도 포함되며 수입·지출 총계가 아닙니다 (예상 수지는 세력 현황 참조).</p>
     <div style="overflow:auto;flex:1;min-height:0"><table style="width:100%;font-size:13px;border-collapse:collapse"><tr style="color:#998"><td>항목</td><td style="text-align:right">월초</td><td style="text-align:right">월말</td><td style="text-align:right">증감</td></tr>${rows.map(tr).join('')}</table>
     ${rvw.from ? '' : '<p style="font-size:12px;color:#fc8;margin:6px 0">집계 기준 없음 — 새 게임·세력 전환·구 세이브 이후 첫 결산은 월초 기준이 없어 증감을 계산하지 않습니다.</p>'}
@@ -461,7 +442,7 @@ function checkGameOver() {
     if (others.length === 0) { endModal('천하가 정리되었습니다.'); return; }
     modal(`【${game.forceName(f.id)}】${josa(game.forceName(f.id), ['이','가']).slice(-1)} 멸망했습니다.`, [
       ['다른 세력으로 계속', () => { // R14: 관전과 구분 — 계속할 세력을 직접 선택 (설계안 190행)
-        modal('계속할 세력 선택', game.aliveForces().map(of => [game.forceName(of.id), () => { game.playerForce = of.id; game.deadAck = true; game.delegated = false; setAuto(false); refreshAll(); }]).concat([['취소', () => checkGameOver()]]));
+        modal('계속할 세력 선택', game.aliveForces().map(of => [game.forceName(of.id), () => { game.playerForce = of.id; game.monthlyReview = null; game._reviewBase = null; game.deadAck = true; game.delegated = false; setAuto(false); refreshAll(); }]).concat([['취소', () => checkGameOver()]]));
       }],
       ['관전만 계속', () => { game.deadAck = true; game.delegated = true; refreshHud(); setAuto(true); }],
       ['게임 종료', () => endModal('게임을 종료했습니다. 타이틀로 돌아갑니다.')],
@@ -994,7 +975,22 @@ function showCityPanel(c) {
       }
     }
   }
-  p.innerHTML = html;
+  // Preserve the join control while automatic turns refresh city facts.
+  const offeredForce = c.force;
+  const wantsJoin = game.delegated && offeredForce != null && offeredForce !== game.playerForce && game.forces[offeredForce]?.alive;
+  let body=p.querySelector('#city-live-body'),stable=p.querySelector('#city-join-stable');
+  if(!body||!stable||p.dataset.cityStable!==String(c.id)) {
+    stable=document.createElement('div');stable.id='city-join-stable';
+    body=document.createElement('div');body.id='city-live-body';
+    p.replaceChildren(stable,body);p.dataset.cityStable=String(c.id);
+  }
+  html=html.replace(/<button class="cmd" id="cmd-join">[^<]*<\/button>/,'');
+  if(wantsJoin) {
+    let b=stable.querySelector('#cmd-join');if(b&&b.dataset.force!==String(offeredForce)){b.remove();b=null}if(!b){b=document.createElement('button');b.id='cmd-join';b.className='cmd';stable.append(b)}
+    b.textContent=`이 세력으로 참가 (${game.forceName(offeredForce)})`;
+    b.dataset.force=String(offeredForce);
+  } else stable.replaceChildren();
+  body.innerHTML=html;
   p.scrollTop = 0; // 패널 상단 고정 (이전 스크롤 잔류로 도시명이 가려지는 문제 방지)
   if (mine) {
     const sw = $('cmd-swear');
@@ -1024,7 +1020,8 @@ function showCityPanel(c) {
   if (legManage) legManage.onclick = () => showLegions(c); // 수동 내정 명령 차단과 관리 진입은 분리
   const join = $('cmd-join');
   if (join) join.onclick = () => {
-    game.pendingJoin = c.force;
+    if(!game.delegated||c.force!==offeredForce||!game.forces[offeredForce]?.alive||offeredForce===game.playerForce||join.dataset.force!==String(offeredForce)||!join.isConnected)return;
+    game.pendingJoin = offeredForce;
     game.log(`${game.forceName(c.force)}에 참가 요청 — 이번 턴이 끝나면 인계됩니다.`, true);
     game.autosave(); // R128: 결정 즉시 영속 (R122 패턴) — 턴 경계 전 reload 시 요청 소실 방지
     $('panel').classList.add('hidden'); refreshLog();
@@ -1221,9 +1218,7 @@ async function boot() {
       g.restoreDebate(d.pendingDebate); // R200: validate already-paid negotiation context
       g.restoreDuel(d.pendingDuel); // R197: reattach only after canonical unit/officer reconciliation
       game = g; enterGame(); refreshAll(); checkGameOver(); // R14: 저장 시점이 종료 상태면 모달 재표시
-      if (game.pendingDuel) showDuel();
-      else if (game.pendingDebate) showDebate();
-      else if ((game.pendingDiplo ?? []).length) showDiploIn(); // R123: 저장 시점의 보류 제안은 효과 재적용 없이 결정 모달만 복원
+      showPendingDecision(); // R123: 저장 시점의 보류 제안은 효과 재적용 없이 결정 모달만 복원
       if (game.delegated) setAuto(true);
     };
   }

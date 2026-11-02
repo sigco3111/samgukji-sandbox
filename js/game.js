@@ -1593,7 +1593,7 @@ produceArms(id,key){const g=this;const c=g.cityById[id],a=this.armsInfo(c,key);i
       if (this.playerForce != null && this.forces[this.playerForce]?.alive) { // R132: 월 결산 — 지난달 보유량 증감 기록 (정보 표시 전용, 규칙 변경 없음). 기준월이 없으면(새 게임·세력 전환·구 세이브 첫 월) from=null로 '집계 기준 없음' 표시
         const s = this._forceSnapshot(this.playerForce);
         const b = this._reviewBase;
-        this.monthlyReview = { y: this.year, m: this.month, from: (b && b.fid === this.playerForce) ? b.s : null, to: s };
+        this.monthlyReview = { fid: this.playerForce, y: this.year, m: this.month, from: (b && b.fid === this.playerForce) ? b.s : null, to: s };
         this._reviewBase = { fid: this.playerForce, s };
       }
       this.month++; if (this.month > 12) { this.month = 1; this.year++; }
@@ -1603,6 +1603,7 @@ produceArms(id,key){const g=this;const c=g.cityById[id],a=this.armsInfo(c,key);i
     if (this.pendingJoin != null) { // R128: 대상 멸망·자기 세력 등 무효 요청은 취소 안내 후 해제 (영구 잔류 방지)
       if (this.forces[this.pendingJoin]?.alive && this.pendingJoin !== this.playerForce) {
         this.playerForce = this.pendingJoin; this.delegated = false; this.pendingJoin = null;
+        this.monthlyReview = null; this._reviewBase = null; // R206: no previous-force report under the new command
         this.log(`【${this.forceName(this.playerForce)}】에 참가하여 지휘를 시작합니다.`, true);
       } else {
         this.log(`참가 요청한 ${josa('【' + this.forceName(this.pendingJoin) + '】군', ['이','가'])} 멸망하여 참가 요청이 취소되었습니다. 다른 세력을 선택해 주세요.`, true);
