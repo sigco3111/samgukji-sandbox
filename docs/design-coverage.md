@@ -386,3 +386,6 @@ seed91 184/190/251 각601·1801턴저장6건을main실제복원구간으로로�
 
 ## R207 hostile aim caster exclusion, local candidate
 Natural190SunJian24 siege save exposed selfunit hiding citytarget at cameraangles0/1; two/three rotations had tiny validregion. Only hostile pendingaim skips its own caster; calm and other-unit priority unchanged. Pick8/full55 suites, real390citycenter fire naturallysucceeds(-339/qi-10/burn3), exactsaveContinue, enemyunit spiral retained, explicitqi80 selfcalm(-10/+20) retained. Rule/AI unchanged, notpublic/physicalphone. See targeting-r207.md. Manual campaign evidence separately records actualneutralcapture, siege, retreat and merchant recovery; not whole strategic completion.
+
+## R208 neutral-only military target candidate
+Existingeligibleordinarytarget and threateneddefence remain. If neitherapplies, search onlyreachable eligible neutralcities within existinglegiontargetfilters. Firstnaturalsnapshot baseline0orders/candidate3000spear→Jinyang withsameRNG/costs. Focused16/full56suites,9continued120turninvariant0,390actualdelegation/stop1812Jinyangforce21/5850/4canonicalofficers, wholeSaveexactactualContinue/errors0. Commandownerfixture disclosed, capture1805 is seededengineevidence not screenshot. Nooverallstrategy/unification/realphoneclaim. Localunpublished. [Scope](neutral-target-r208.md).
