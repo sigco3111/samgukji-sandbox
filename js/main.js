@@ -2,7 +2,7 @@
 import { Map3D, toWorld } from './map3d.js?v=r196';
 import { Game, SAVE_KEY, RULES, forceColor, UNIT_TYPES, ARTS, OFFICES, restoreOfficer, FIELD_FACS, TRAPS, SHIP_TYPES, TAC_SHIP_OK, josa, josaRo, TECH_BRANCHES, TECH_P, TECH_GOLD, TECH_DESC, FACILITIES, ITEMS, SIEGE_BUILD, SHIP_BUILD, ARMS_BUILD, AB_BRANCHES, AB_P, AB_SKILL, AB_PICK } from './game.js?v=r196';
 import { aiThink } from './ai.js?v=r196';
-import { rosterRows, rosterOfficer } from './officer-roster.js?v=r196';
+import { rosterRows, rosterOfficer, rosterRelations } from './officer-roster.js?v=r196';
 
 const $ = id => document.getElementById(id);
 let DATA = null, game = null, map = null, selectedUnit = null, autoTimer = null, pendingFire = null; // R15: 직접 전법·계략 대기
@@ -381,7 +381,7 @@ function showOfficerRoster() {
     html += `<label>이름 검색 <input id="roster-search" type="search" value="${esc(query)}" style="width:100%;box-sizing:border-box"></label><label>정렬 <select id="roster-sort">${[['name','이름'],['ldr','통솔'],['war','무력'],['int','지력'],['pol','정치'],['chr','매력']].map(([v,n])=>`<option value="${v}"${v===sort?' selected':''}>${n}</option>`).join('')}</select></label><p>${rows.length}명 · 같은 무장은 한 번만 표시</p>`;
     if (detail) {
       const o = game.officers[detail.idx], st = o.state;
-      html += `<section style="border:1px solid #8a7950;padding:10px;margin:10px 0"><h3>${esc(o.name_ko)} 상세</h3>${officerRow(o.idx)}<p>현재 소속: ${esc(detail.force)}<br>상태: ${esc(detail.status)}<br>위치: ${esc(detail.location)}${detail.captor ? '<br>포박자: '+esc(detail.captor) : ''}</p><p>병종 적성: ${['창','극','노','기병','병기','수군'].map((n,i)=>n+' '+esc(o.apt?.[i]??'C')).join(' · ')}</p><p>관직: ${esc(OFFICES[game.officeOf(o.idx)]?.name ?? '무관직')}</p>${(st.items??[]).map(id=>{const it=ITEMS.find(x=>x.id===id);return `<p>명품: ${esc(it?.name??id)}${it?.desc?' · '+esc(it.desc):''}</p>`}).join('')}<button class="cmd" id="roster-detail-close">상세 닫기</button></section>`;
+      html += `<section style="border:1px solid #8a7950;padding:10px;margin:10px 0"><h3>${esc(o.name_ko)} 상세</h3>${officerRow(o.idx, true)}<p>현재 소속: ${esc(detail.force)}<br>상태: ${esc(detail.status)}<br>위치: ${esc(detail.location)}${detail.captor ? '<br>포박자: '+esc(detail.captor) : ''}</p><p>병종 적성: ${['창','극','노','기병','병기','수군'].map((n,i)=>n+' '+esc(o.apt?.[i]??'C')).join(' · ')}</p><p>관직: ${esc(OFFICES[game.officeOf(o.idx)]?.name ?? '무관직')}</p>${(st.items??[]).map(id=>{const it=ITEMS.find(x=>x.id===id);return `<p>명품: ${esc(it?.name??id)}${it?.desc?' · '+esc(it.desc):''}</p>`}).join('')}<button class="cmd" id="roster-detail-close">상세 닫기</button></section>`;
     } else if (selected != null) selected = null;
     html += rows.map(r=>`<div class="officer" style="flex-wrap:wrap"><div style="flex:1;min-width:160px"><div class="nm">${esc(r.name)}</div><div class="st">${esc(r.force)} · ${esc(r.status)}<br>${esc(r.location)}${r.captor?' · 포박자 '+esc(r.captor):''}</div></div><button class="cmd roster-open" data-i="${r.idx}">상세</button></div>`).join('') || '<p>검색 결과가 없습니다.</p>';
     p.innerHTML = html;
@@ -840,8 +840,8 @@ function showTech() {
   p.querySelectorAll('.cmd-artr').forEach(btn => btn.onclick = () => { if (game.researchArt(game.playerForce, btn.dataset.a)) { refreshAll(); showTech(); } });
   $('cmd-tech-back').onclick = () => { const c = lastCityId != null && game.cityById[lastCityId]; if (c) showCityPanel(c); else p.classList.add('hidden'); };
 }
-function relLine(idx) { // R12: 관계 표시
-  const r = game.relOf(idx);
+function relLine(idx, readOnly = false) { // R12: 관계 표시
+  const r = readOnly ? rosterRelations(game, idx) : game.relOf(idx);
   const nm = i => DATA.officers[i]?.name_ko ?? '?';
   const parts = [];
   if (r.sworn.length) parts.push('의형제: ' + r.sworn.map(nm).join('·'));
@@ -851,9 +851,9 @@ function relLine(idx) { // R12: 관계 표시
   parts.push('상성 ' + game.affOf(idx));
   return ' · ' + parts.join(' · ');
 }
-function officerRow(idx) {
+function officerRow(idx, readOnly = false) {
   const o = DATA.officers[idx];
-  return `<div class="officer"><span class="pimg" style="${portraitCss(idx)}"></span><div><div class="nm">${o.name_ko} <span class="st">${o.name_zh}</span></div><div class="st">통${o.ldr} 무${o.war} 지${o.int} 정${o.pol} 매${o.chr} · ${o.skill ? o.skill + ' — ' + (DATA.skills[o.skill] || '') : '특기 없음'} · 충성 ${o.state?.loyal ?? '-'} · 공적 ${o.state?.merit ?? 0}${(o.state?.injuredUntil ?? 0) > game.turn ? ' · <span style="color:#f66">부상</span>' : ''}${(o.state?.items ?? []).length ? ' · 명품: ' + o.state.items.map(id => ITEMS.find(i => i.id === id)?.name ?? id).join('·') : ''}</div><div class="st" style="color:#b9a">${relLine(idx)}</div></div></div>`;
+  return `<div class="officer"><span class="pimg" style="${portraitCss(idx)}"></span><div><div class="nm">${o.name_ko} <span class="st">${o.name_zh}</span></div><div class="st">통${o.ldr} 무${o.war} 지${o.int} 정${o.pol} 매${o.chr} · ${o.skill ? o.skill + ' — ' + (DATA.skills[o.skill] || '') : '특기 없음'} · 충성 ${o.state?.loyal ?? '-'} · 공적 ${o.state?.merit ?? 0}${(o.state?.injuredUntil ?? 0) > game.turn ? ' · <span style="color:#f66">부상</span>' : ''}${(o.state?.items ?? []).length ? ' · 명품: ' + o.state.items.map(id => ITEMS.find(i => i.id === id)?.name ?? id).join('·') : ''}</div><div class="st" style="color:#b9a">${relLine(idx, readOnly)}</div></div></div>`;
 }
 let lastCityId = null;
 // R151: 기존 내정 명령 조건의 안내만. 금/AP/효과 산식은 엔진 그대로.
