@@ -2456,6 +2456,10 @@ produceArms(id,key){const g=this;const c=g.cityById[id],a=this.armsInfo(c,key);i
   
   swapDuelOfficer(d,k,idx) { return swapDuelOfficer.call(this,d,k,idx); }
   
+  debateSnapshot() { return debateSnapshot.call(this); }
+  
+  restoreDebate(raw) { return restoreDebate.call(this,raw); }
+  
 duelSnapshot() { return duelSnapshot.call(this); }
   
   restoreDuel(raw) { return restoreDuel.call(this,raw); }
