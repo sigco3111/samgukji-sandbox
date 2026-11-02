@@ -1,0 +1,1 @@
+import fs from'node:fs';import assert from'node:assert/strict';const s=fs.readFileSync('css/style.css','utf8').match(/#map-canvas\s*\{([^}]+)\}/)[1];for(const x of['width:100%','height:100%','position:fixed','inset:0','touch-action:none'])assert.ok(s.includes(x),x);console.log('R204 canvas CSS 5 source gates PASS');
