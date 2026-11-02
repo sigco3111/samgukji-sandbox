@@ -1,16 +1,17 @@
-import {facilityEffectDesc} from './facility-desc.js?v=r218';
-import {mountDebate} from './debate-ui.js?v=r218';
-import {mountDuel} from './duel-ui.js?v=r218';
+import {unitOrderText} from './unit-order.js?v=r219';
+import {facilityEffectDesc} from './facility-desc.js?v=r219';
+import {mountDebate} from './debate-ui.js?v=r219';
+import {mountDuel} from './duel-ui.js?v=r219';
 // 진입점: 화면 전환·UI·지도 연결
-import { Map3D, toWorld } from './map3d.js?v=r218';
-import { Game, SAVE_KEY, RULES, forceColor, UNIT_TYPES, ARTS, OFFICES, restoreOfficer, FIELD_FACS, TRAPS, SHIP_TYPES, TAC_SHIP_OK, josa, josaRo, TECH_BRANCHES, TECH_P, TECH_GOLD, TECH_DESC, FACILITIES, ITEMS, SIEGE_BUILD, SHIP_BUILD, ARMS_BUILD, AB_BRANCHES, AB_P, AB_SKILL, AB_PICK } from './game.js?v=r218';
-import { aiThink } from './ai.js?v=r218';
-import { rosterRows, rosterOfficer, rosterRelations } from './officer-roster.js?v=r218';
+import { Map3D, toWorld } from './map3d.js?v=r219';
+import { Game, SAVE_KEY, RULES, forceColor, UNIT_TYPES, ARTS, OFFICES, restoreOfficer, FIELD_FACS, TRAPS, SHIP_TYPES, TAC_SHIP_OK, josa, josaRo, TECH_BRANCHES, TECH_P, TECH_GOLD, TECH_DESC, FACILITIES, ITEMS, SIEGE_BUILD, SHIP_BUILD, ARMS_BUILD, AB_BRANCHES, AB_P, AB_SKILL, AB_PICK } from './game.js?v=r219';
+import { aiThink } from './ai.js?v=r219';
+import { rosterRows, rosterOfficer, rosterRelations } from './officer-roster.js?v=r219';
 
 const $ = id => document.getElementById(id);
 let DATA = null, game = null, map = null, selectedUnit = null, autoTimer = null, pendingFire = null; // R15: 직접 전법·계략 대기
 
-const BUILD_ID = 'r218'; // 빌드 ID (index.html의 meta[name=build]와 같아야 함 - 오래된 캐시된 index와 새 스크립트의 혼합 감지)
+const BUILD_ID = 'r219'; // 빌드 ID (index.html의 meta[name=build]와 같아야 함 - 오래된 캐시된 index와 새 스크립트의 혼합 감지)
 function checkBuildSkew() {
   const idx = document.querySelector('meta[name="build"]')?.content;
   if (idx === BUILD_ID) { sessionStorage.removeItem('cheonha-xi-web.skew'); return; } // 일치하면 재시도 표식 해제
@@ -23,7 +24,7 @@ checkBuildSkew();
 async function loadData() {
   const [officers, skills, portraits, s184, s190, s251] = await Promise.all(
     ['data/officers670.json','data/skills.json','data/portraits.json','data/scenario-184.json','data/scenario-190.json','data/scenario-251.json']
-      .map(u => fetch(u + '?v=r218').then(r => r.json())));
+      .map(u => fetch(u + '?v=r219').then(r => r.json())));
   const byIdx = {};
   for (const o of officers) byIdx[o.idx] = o;
   DATA = { officers: byIdx, skills, portraits, scenarios: { '184': s184, '190': s190, '251': s251 } };
@@ -396,7 +397,7 @@ function showDashboard() { // R97→R99: 세력 현황 대시보드 — 카드�
       body += sec('부족 경고', warns.length ? warns.map(w => `<p style="margin:2px 0;color:#e66">${w}</p>`).join('') : none('부족 경고 없음 — 현재 추세를 12개월 시뮬레이션한 기준'), warns.length > 0);
       body += sec('위협 (공격받는 도시)', ov.threats.length ? ov.threats.map(t => `<p style="margin:2px 0;color:#e66">⚠ ${t.forceName} 「${t.label}」 ${fmt(t.troops)} → ${t.city} (거리 ${t.dist})</p>`).join('') : none('공격받는 도시 없음 — 접근 중인 적 부대가 확인되지 않음'), ov.threats.length > 0);
       const orders = ov.units.map(u => {
-        const st = u.building ? `${u.building} 건설 중` : u.dest ? `→ ${u.dest} 이동 중 (남은 경로 ${u.pathLen})` : '대기 중 — 부여된 목표 없음';
+        const raw=game.units.find(x=>x.id===u.id);const st=raw?unitOrderText(raw,game.cityById,game.fieldFacs):'부대 상태 확인 필요';
         return `<p style="margin:2px 0">${u.label} ${UNIT_TYPES[u.type]?.name ?? u.type} ${fmt(u.troops)} (${u.officers.join('·')}) — ${st}</p>`;
       });
       body += sec('진행 명령 (출진 부대)', orders.length ? orders.join('') : none('진행 중인 명령 없음 — 출진 부대가 없음'));
@@ -1155,6 +1156,7 @@ function showUnitPanel(uid) {
   p.innerHTML = `<h3>${u.label} (${UNIT_TYPES[u.type].name})</h3>
     <p>소속: ${game.forceName(u.force)} · 병력 ${u.troops.toLocaleString()}<br>
     부장: ${u.officers.map(i => DATA.officers[i].name_ko).join(', ')}<br>기력 ${u.qi ?? 100} / 100${(u.conf ?? 0) > 0 ? ` · <span style='color:#e66'>혼란 ${u.conf}턴</span>` : ''}${u.food != null ? ` · 병량 ${Math.round(u.food)}${(() => { const eat = u.troops * RULES.garrisonFood / 3; const days = eat > 0 ? Math.round(u.food / eat) * 10 : 999; return days <= 30 ? ` <span style='color:#e66'>(${days}일분!)</span>` : ` (${days}일분)`; })()}` : ''}</p>
+    <p id="up-order" style="color:#c9d6ab">${unitOrderText(u,game.cityById,game.fieldFacs)}</p>
     ${mine ? '<p style="color:#ffd700">목표 도시를 클릭하면 이동 명령을 내립니다.</p>' : ''}
     ${mine && game.tacticInfo?.(u) ? `<p>${game.tacticInfo(u).opts.map(o => o.block ? `<button class="cmd up-tac" data-tid="${o.id}" disabled style="opacity:.5">전법 ${o.name} (기력 ${o.qi}) — ${o.block}</button>` : `<button class="cmd up-tac" data-tid="${o.id}">전법 ${o.name} (기력 ${o.qi})</button>`).join(' ')}</p>` : ''}
     ${mine && game.canAmbush(u) && game.ambushTarget(u) && (u._stratTurn ?? -1) !== game.turn && (u.qi ?? 100) >= 10 && u.officers.some(i => (DATA.officers[i]?.int ?? 0) >= 60) ? '<p><button class="cmd" id="up-ambush">계략 복병 (기력 10, 숲에서 인접 적 기습)</button></p>' : ''}
