@@ -1,16 +1,16 @@
-import {facilityEffectDesc} from './facility-desc.js?v=r217';
-import {mountDebate} from './debate-ui.js?v=r217';
-import {mountDuel} from './duel-ui.js?v=r217';
+import {facilityEffectDesc} from './facility-desc.js?v=r218';
+import {mountDebate} from './debate-ui.js?v=r218';
+import {mountDuel} from './duel-ui.js?v=r218';
 // 진입점: 화면 전환·UI·지도 연결
-import { Map3D, toWorld } from './map3d.js?v=r217';
-import { Game, SAVE_KEY, RULES, forceColor, UNIT_TYPES, ARTS, OFFICES, restoreOfficer, FIELD_FACS, TRAPS, SHIP_TYPES, TAC_SHIP_OK, josa, josaRo, TECH_BRANCHES, TECH_P, TECH_GOLD, TECH_DESC, FACILITIES, ITEMS, SIEGE_BUILD, SHIP_BUILD, ARMS_BUILD, AB_BRANCHES, AB_P, AB_SKILL, AB_PICK } from './game.js?v=r217';
-import { aiThink } from './ai.js?v=r217';
-import { rosterRows, rosterOfficer, rosterRelations } from './officer-roster.js?v=r217';
+import { Map3D, toWorld } from './map3d.js?v=r218';
+import { Game, SAVE_KEY, RULES, forceColor, UNIT_TYPES, ARTS, OFFICES, restoreOfficer, FIELD_FACS, TRAPS, SHIP_TYPES, TAC_SHIP_OK, josa, josaRo, TECH_BRANCHES, TECH_P, TECH_GOLD, TECH_DESC, FACILITIES, ITEMS, SIEGE_BUILD, SHIP_BUILD, ARMS_BUILD, AB_BRANCHES, AB_P, AB_SKILL, AB_PICK } from './game.js?v=r218';
+import { aiThink } from './ai.js?v=r218';
+import { rosterRows, rosterOfficer, rosterRelations } from './officer-roster.js?v=r218';
 
 const $ = id => document.getElementById(id);
 let DATA = null, game = null, map = null, selectedUnit = null, autoTimer = null, pendingFire = null; // R15: 직접 전법·계략 대기
 
-const BUILD_ID = 'r217'; // 빌드 ID (index.html의 meta[name=build]와 같아야 함 - 오래된 캐시된 index와 새 스크립트의 혼합 감지)
+const BUILD_ID = 'r218'; // 빌드 ID (index.html의 meta[name=build]와 같아야 함 - 오래된 캐시된 index와 새 스크립트의 혼합 감지)
 function checkBuildSkew() {
   const idx = document.querySelector('meta[name="build"]')?.content;
   if (idx === BUILD_ID) { sessionStorage.removeItem('cheonha-xi-web.skew'); return; } // 일치하면 재시도 표식 해제
@@ -23,7 +23,7 @@ checkBuildSkew();
 async function loadData() {
   const [officers, skills, portraits, s184, s190, s251] = await Promise.all(
     ['data/officers670.json','data/skills.json','data/portraits.json','data/scenario-184.json','data/scenario-190.json','data/scenario-251.json']
-      .map(u => fetch(u + '?v=r217').then(r => r.json())));
+      .map(u => fetch(u + '?v=r218').then(r => r.json())));
   const byIdx = {};
   for (const o of officers) byIdx[o.idx] = o;
   DATA = { officers: byIdx, skills, portraits, scenarios: { '184': s184, '190': s190, '251': s251 } };
@@ -123,7 +123,7 @@ function refreshSaveNotice() {
  const text=document.createElement('span');text.textContent='저장하지 못했습니다. 현재 진행은 이 화면에만 있습니다. 새로고침하거나 닫지 마세요. ';const b=document.createElement('button');b.textContent='저장 다시 시도';b.onclick=()=>{game.autosave();refreshSaveNotice()};el.append(text,b);
 }
 function saveAndTitle() {if(game?.autosave()){location.reload();return}refreshSaveNotice();modal('저장하지 못해 타이틀로 이동하지 않았습니다. 이 화면을 유지하고 저장을 다시 시도하세요.',[['계속',()=>{}]])}
-function worldUnit(u) { const [x, z] = toWorld(u.x, u.z); return { id: u.id, x, z, label: u.label, type: u.type }; } // R16: 병종별 모델용 type
+function worldUnit(u) { const [x, z] = toWorld(u.x, u.z); return { id: u.id, x, z, label: u.label, type: u.type, displayName: game.officers[u.officers?.[0]]?.name_ko ?? u.label, troops: u.troops }; } // R16: 병종별 모델용 type
 function refreshOpenPanel() { // R130: 일기토·설전·수신 외교 결정 후 열린 패널 정체 방지 (관계 수치 미갱신 관측 결함 수정) — 턴 종료 후속(R108)과 같은 기준으로 현재 보기만 다시 그림
   const p = $('panel');
   if (p.classList.contains('hidden')) return;
