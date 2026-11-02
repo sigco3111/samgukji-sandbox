@@ -78,3 +78,5 @@ select { background:#3a3226; color:#e8e0d0; border:1px solid #6b5d43; font-famil
 /* Nonmodal completed-contest snapshot. No focus grab or decision queue change. */
 #contest-result{position:fixed;z-index:30;right:12px;top:calc(var(--hud-h,70px) + 10px);max-width:min(370px,calc(100vw - 24px));box-sizing:border-box;padding:12px;background:rgba(29,26,19,.96);border:1px solid #c6a54a;border-radius:8px;box-shadow:0 4px 18px #0008;color:#ffe6a0;display:flex;gap:10px;align-items:flex-start;font-size:13px;pointer-events:auto}
 #contest-result p{color:#eee;margin:7px 0}#contest-result small{color:#bcb49c}#contest-result button{flex:none}
+
+.battle-report {border:1px solid #66573c;border-radius:6px;padding:10px;margin:8px 0;text-align:left;overflow-wrap:anywhere}.battle-report h4{margin:0 0 9px;color:#ffe3a0}.battle-report p{margin:6px 0;line-height:1.5}

@@ -309,8 +309,8 @@ export class Game {
     this.chronicle = []; // R14: 연감 — 【】 주요 사건 기록
     this._reconcileOfficerRosters(); // R158: 소재지 없는 재직 무장도 기존 로드와 같은 정합화로 배치. 새게임/이어하기 명단 일치
   }
-  log(msg, mine=false) {
-    this.logs.push({ t: `${this.year}년 ${this.month}월`, msg, mine }); if (this.logs.length > 200) this.logs.shift();
+  log(msg, mine=false, battle=null) {
+    this.logs.push({ t: `${this.year}년 ${this.month}월`, msg, mine, ...(battle?{battle}:{}) }); if (this.logs.length > 200) this.logs.shift();
     if (msg.includes('【')) { this.chronicle = this.chronicle ?? []; this.chronicle.push({ y: this.year, m: this.month, msg }); if (this.chronicle.length > 300) this.chronicle.shift(); } // R14 연감
   }
   forceName(fid) { const f = this.forces[fid]; return f ? this.officers[f.ruler].name_ko + '군' : '적병'; }
@@ -1788,11 +1788,14 @@ produceArms(id,key){const g=this;const c=g.cityById[id],a=this.armsInfo(c,key);i
     if (this.cityHasSkill(c, '수성')) dmg = Math.round(dmg * 0.85); // 수성: 주둔 도시 방어 보정
     if (c.force != null) dmg = Math.round(dmg * (1 - 0.05 * this.techLv(c.force, '방위'))); // 방위 기교: 도시 방어
     const troopDmg = Math.min(c.troops, dmg), hpDmg = Math.min(c.hp, Math.round(dmg * 0.5)); // R69: 로그는 실제 감소분 — 계산 피해량을 그대로 적으면 공백지(수비 0)에도 '적병 -673'처럼 실상과 어긋남
+    const report = {v:1,recordedFor:this.playerForce,observed:!!this.delegated,kind:'siege',turn:this.turn,year:this.year,month:this.month,
+      a:{id:u.id,name:lead.name_ko,force:u.force,x:u.x,z:u.z,before:u.troops,loss:Math.min(u.troops,loss),after:Math.max(0,u.troops-loss)},
+      b:{id:c.id,name:c.name_ko,force:c.force,x:c.lon,z:c.lat,before:c.troops,loss:troopDmg,after:c.troops-troopDmg,hpBefore:c.hp,hpLoss:hpDmg,hpAfter:c.hp-hpDmg}};
     c.troops -= troopDmg;
     c.hp -= hpDmg;
     u.troops = Math.max(0, u.troops - loss);
     this.gainTechP(u.force, Math.min(50, Math.floor(dmg / 100))); // 전투 기교P는 계산 피해량 기준 유지
-    this.log(`${josa(u.label, ['이','가'])} ${josa(c.name_ko, ['을','를'])} 공격 (적병 -${troopDmg}, 내구 -${hpDmg}, 아군 -${loss})`, u.force === this.playerForce);
+    this.log(`${josa(u.label, ['이','가'])} ${josa(c.name_ko, ['을','를'])} 공격 (적병 -${troopDmg}, 내구 -${hpDmg}, 아군 -${loss})`, u.force === this.playerForce, report);
     if (u.troops <= 0) { this._rehomeOfficers(u, c.force); this.units = this.units.filter(x => x !== u); this.log(`${u.label} 부대가 전멸했습니다`, false); return; } // R111: 반격 전멸은 수비측이 포박 판정
     if (c.troops <= 0 || c.hp <= 0) {
       this._captureCity(u, c);
@@ -1946,10 +1949,13 @@ produceArms(id,key){const g=this;const c=g.cityById[id],a=this.armsInfo(c,key);i
     if (a._guard) db = Math.round(db * (TACTICS[a.type]?.guard ?? 1)); // 철벽: 받는 피해 감소
     if (b._guard) da = Math.round(da * (TACTICS[b.type]?.guard ?? 1));
     const aLoss = Math.min(a.troops, db), bLoss = Math.min(b.troops, da); // R69: 로그는 실제 감소분
+    const report = {v:1,recordedFor:this.playerForce,observed:!!this.delegated,kind:'field',turn:this.turn,year:this.year,month:this.month,
+      a:{id:a.id,name:this.officers[a.officers[0]]?.name_ko??a.label,force:a.force,x:a.x,z:a.z,before:a.troops,loss:aLoss,after:a.troops-aLoss},
+      b:{id:b.id,name:this.officers[b.officers[0]]?.name_ko??b.label,force:b.force,x:b.x,z:b.z,before:b.troops,loss:bLoss,after:b.troops-bLoss}};
     a.troops -= aLoss;
     b.troops -= bLoss;
     this.gainTechP(a.force, Math.min(40, Math.floor(db / 100))); this.gainTechP(b.force, Math.min(40, Math.floor(da / 100))); // 전투 기교P는 계산 피해량 기준 유지
-    this.log(`【야전】${a.label} ↔ ${b.label} 교전 (${a.label} -${aLoss} / ${b.label} -${bLoss})`, a.force === this.playerForce || b.force === this.playerForce);
+    this.log(`【야전】${a.label} ↔ ${b.label} 교전 (${a.label} -${aLoss} / ${b.label} -${bLoss})`, a.force === this.playerForce || b.force === this.playerForce, report);
     // R10: 일기토 발동 — 기병 전법 시 15%, 일반 야전 8% (자체 확률). 양측 무장 보유·적병 제외
     if (!this.pendingDuel && a.troops > 0 && b.troops > 0 && a.officers.length && b.officers.length && a.force !== -1 && b.force !== -1) {
       const cavTac = a._cavTactic || b._cavTactic;
