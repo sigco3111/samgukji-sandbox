@@ -1,19 +1,19 @@
-import {overlappingUnits} from './unit-overlap.js?v=r229';
-import {unitNearbyCities} from './unit-city-access.js?v=r229';
-import {unitOrderText} from './unit-order.js?v=r229';
-import {facilityEffectDesc} from './facility-desc.js?v=r229';
-import {mountDebate} from './debate-ui.js?v=r229';
-import {mountDuel} from './duel-ui.js?v=r229';
+import {overlappingUnits} from './unit-overlap.js?v=r230';
+import {unitNearbyCities} from './unit-city-access.js?v=r230';
+import {unitOrderText} from './unit-order.js?v=r230';
+import {facilityEffectDesc} from './facility-desc.js?v=r230';
+import {mountDebate} from './debate-ui.js?v=r230';
+import {mountDuel} from './duel-ui.js?v=r230';
 // 진입점: 화면 전환·UI·지도 연결
-import { Map3D, toWorld } from './map3d.js?v=r229';
-import { Game, SAVE_KEY, RULES, forceColor, UNIT_TYPES, ARTS, OFFICES, restoreOfficer, FIELD_FACS, TRAPS, SHIP_TYPES, TAC_SHIP_OK, josa, josaRo, TECH_BRANCHES, TECH_P, TECH_GOLD, TECH_DESC, FACILITIES, ITEMS, SIEGE_BUILD, SHIP_BUILD, ARMS_BUILD, AB_BRANCHES, AB_P, AB_SKILL, AB_PICK } from './game.js?v=r229';
-import { aiThink } from './ai.js?v=r229';
-import { rosterRows, rosterOfficer, rosterRelations } from './officer-roster.js?v=r229';
+import { Map3D, toWorld } from './map3d.js?v=r230';
+import { Game, SAVE_KEY, RULES, forceColor, UNIT_TYPES, ARTS, OFFICES, restoreOfficer, FIELD_FACS, TRAPS, SHIP_TYPES, TAC_SHIP_OK, josa, josaRo, TECH_BRANCHES, TECH_P, TECH_GOLD, TECH_DESC, FACILITIES, ITEMS, SIEGE_BUILD, SHIP_BUILD, ARMS_BUILD, AB_BRANCHES, AB_P, AB_SKILL, AB_PICK } from './game.js?v=r230';
+import { aiThink } from './ai.js?v=r230';
+import { rosterRows, rosterOfficer, rosterRelations } from './officer-roster.js?v=r230';
 
 const $ = id => document.getElementById(id);
 let DATA = null, game = null, map = null, selectedUnit = null, autoTimer = null, pendingFire = null; // R15: 직접 전법·계략 대기
 
-const BUILD_ID = 'r229'; // 빌드 ID (index.html의 meta[name=build]와 같아야 함 - 오래된 캐시된 index와 새 스크립트의 혼합 감지)
+const BUILD_ID = 'r230'; // 빌드 ID (index.html의 meta[name=build]와 같아야 함 - 오래된 캐시된 index와 새 스크립트의 혼합 감지)
 function checkBuildSkew() {
   const idx = document.querySelector('meta[name="build"]')?.content;
   if (idx === BUILD_ID) { sessionStorage.removeItem('cheonha-xi-web.skew'); return; } // 일치하면 재시도 표식 해제
@@ -26,7 +26,7 @@ checkBuildSkew();
 async function loadData() {
   const [officers, skills, portraits, s184, s190, s251] = await Promise.all(
     ['data/officers670.json','data/skills.json','data/portraits.json','data/scenario-184.json','data/scenario-190.json','data/scenario-251.json']
-      .map(u => fetch(u + '?v=r229').then(r => r.json())));
+      .map(u => fetch(u + '?v=r230').then(r => r.json())));
   const byIdx = {};
   for (const o of officers) byIdx[o.idx] = o;
   DATA = { officers: byIdx, skills, portraits, scenarios: { '184': s184, '190': s190, '251': s251 } };
@@ -1220,6 +1220,7 @@ async function boot() {
       window.__game = g; // 테스트 훅
       Object.assign(g, { year: d.year, month: d.month, dan: d.dan, turn: d.turn, emperor: d.emperor !== undefined ? d.emperor : g.emperor, cities: d.cities, forces: d.forces, units: d.units, nextUnitId: d.nextUnitId, fieldFacs: d.fieldFacs ?? [], nextFacId: d.nextFacId ?? 1, playerForce: d.playerForce, delegated: d.delegated, logs: d.logs, deadAck: d.deadAck, chronicle: d.chronicle ?? [], pendingDiplo: d.pendingDiplo ?? [], /* R123: 구 저장은 빈 큐 (호환) */ pendingJoin: d.pendingJoin ?? null, /* R128: 구 저장은 null (호환). 무효 요청은 아래에서 정리 */ monthlyReview: d.monthlyReview ?? null, /* R132: 구 저장은 null (호환) — 첫 결산은 기준 없음으로 표시 */ over: d.over ?? false, unified: d.unified ?? d.over ?? false, econGraceUntil: d.econGraceUntil ?? null, econV: d.econV ?? 1 }); g._reviewBase = d.reviewBase ?? null; // R132 // R14: over로 저장된 통일 세이브 호환 / 병량 유예 복원 / econV 없는 구 저장은 구 경제 규칙 보존
       g.cityById = {}; g.cities.forEach(c => g.cityById[c.id] = c);
+      g._siegeWatch = Object.fromEntries(Object.entries(d.siegeWatch && typeof d.siegeWatch === 'object' ? d.siegeWatch : {}).filter(([id, fid]) => g.cityById[id] && Number.isInteger(fid) && (fid === -1 || g.forces[fid]))); // R230: old saves start a fresh watch, invalid entries ignored
       for (const c of g.cities) { c.officers = [...new Set(c.officers ?? [])]; c.captives = c.captives ?? []; } // 레거시 세이브 중복 무장 정리 / R111: 억류 명단 필드 호환 (정합은 _reconcileOfficerRosters)
       g.diplo = d.diplo ?? {};
       g.itemPool = d.itemPool ?? Object.values(ITEMS).map(i => i.id).filter(id => !Object.values(g.officers).some(o => (o.state.items ?? []).includes(id)));

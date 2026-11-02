@@ -2685,6 +2685,7 @@ d.done = true;
         
 pendingDuel: this.duelSnapshot(), // R197: live unit references are encoded as IDs
         
+siegeWatch: this._siegeWatch ?? {}, // R230: already reported approach episodes survive reload
 pendingJoin: this.pendingJoin ?? null, // R128: 참가 요청 영속
         monthlyReview: this.monthlyReview ?? null, reviewBase: this._reviewBase ?? null, // R132: 월 결산 영속 — 턴 경계 전 reload 시 요청 소실 방지 (복원 시 유효성 검증은 로드 경로)
         officerStates: Object.fromEntries(Object.entries(this.officers).filter(([,o]) => o.state).map(([i,o]) => [i, o.state])),
