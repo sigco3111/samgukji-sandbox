@@ -1,6 +1,7 @@
 import fs from'node:fs';import assert from'node:assert/strict';import{Game}from'../js/game.js';
 const s=JSON.parse(fs.readFileSync('data/scenario-190.json')),o=Object.fromEntries(JSON.parse(fs.readFileSync('data/officers670.json')).map(o=>[o.idx,o]));const g=new Game(s,o,{},5),u={force:5,officers:[439],type:'sword',x:100,z:40};let n=0;
 for(const [v,want]of [[1,1/.705],[20,1/.8],[60,1],[80,1/1.1],[100,1/1.2],[-100,1/.705],[500,1/1.2],[null,1],[undefined,1],[NaN,1],[Infinity,1]]){g.officers[439].ldr=v;assert.ok(Math.abs(g.leadershipDefMult(u)-want)<1e-12);n++;}assert.equal(g.leadershipDefMult({...u,officers:[]}),1);n++;
+g.officers[439].apt=['C','C','C','C','C','C']; // R214: isolate leadership with C-neutral aptitude
 g.officers[439].ldr=80;const b=g.leadershipDefMult(u);g.officers[439].skill='강직';assert.equal(g.unitDefMult(u),b*.85);n++;g.fieldFacs=[{id:1,type:'진',force:5,x:100,z:40,left:0,hp:400}];assert.equal(g.unitDefMult(u),b*.85*.92);n++;g.forces[5].arts={'정예창병':true};assert.equal(g.unitDefMult({...u,type:'spear'}),b*.85*.92*.92);n++;
 g.officers[169].ldr=100;assert.equal(g.leadershipDefMult({...u,officers:[439,169]}),b);n++;g.officers[439].ldr=60;assert.equal(g.leadershipDefMult(u),1);n++;console.log(`R213 leadership candidate ${n} focused checks PASS, not release approval`);
 for(const [ldr,fieldLoss,siegeLoss]of[[1,683,1277],[20,602,1125],[60,481,900],[80,438,818],[100,401,750]]){

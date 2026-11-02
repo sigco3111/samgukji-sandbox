@@ -12,7 +12,7 @@
 | 기력 0~100 | 있음 | units.qi | R15 전법 기력 게이트 | 구현+검증 |
 | 기교P 획득·연구 소비 | 있음 | gainTechP·TECH_P | R13·R-jido 게이트 | 구현+검증 |
 | 능력 5종(통무력지정매) 데이터 | 있음 | officers670.json | 값·분포 데이터 게이트만. 효과 5종 전체 검증을 뜻하지 않음 | 데이터 구현+검증 |
-| 능력별 기획 효과 | 있음(통솔=부대 방어 등) | R212 통솔 방어 누락 확인. R213 비공개 후보 연구 중 | 통솔60 기준 잠정식 일반·직접전법·공성반격 대조. 다른 4종 효과 전체 증거 회수 전 | 부분 구현·부분 검증 |
+| 능력별 기획 효과 | 있음(통솔=부대 방어 등) | R213 공개 통솔 방어. 나머지4종 기존 효과 증거 회수·추가 검증 중 | 통솔 일반·직접/자동전법·공성반격 및 실UI·복원 검증. 다른4종 전체 완료 아님 | 부분 구현·부분 검증 |
 | 특기 22종·효과 | 있음 | skills | R17 갭 회수(훈련/신행/이간/귀납/미끼)·R9(치안)·수색 수완 실UI(13:37) | 구현+검증 |
 | 병종 적성 C~S | 있음 | adept | R18b 적성 차단 게이트 | 구현+검증 |
 | 관계(상성·친애·혐오·의형제·부부·결연) | 있음 | R12 관계 데이터 | R12 게이트(결연 비용·충성·저장·혐오 등용·상성) | 구현+검증 |
@@ -403,3 +403,6 @@ Explicit near-victory fixture exposed the unification modal recurring after Cont
 ## R212 field peace and naval integration follow-up
 
 Candidate automatic fire-trap/rockfall/tower target filters now use the existing peace check.18 focused cases and full60 suites; alliance/truce actual UI fixtures retain5000 each. No diplomacy/economy tuning. Naval actual UI route, restore, interception, duel, isolated coastal siege and return/ship recovery are separate fixture evidence, not natural capture or physical-phone verification. See [details and limits](field-peace-r212.md). Candidate, not live.
+
+## R214 적성 방어 비공개 고정후보
+C기준 완만한A(.3) 한 안. 데이터 생성 근거/통솔중첩/부수미적용/자연생산/장기9쌍/실UI·복원과 폐기 역수안 분리는 [상세](aptitude-r214.md). 공개 승인 아님.

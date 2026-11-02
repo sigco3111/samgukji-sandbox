@@ -424,7 +424,8 @@ export class Game {
   }
 
   leadershipDefMult(u) { const raw = this.officers[u.officers[0]]?.ldr; const ldr = Number.isFinite(raw) ? Math.max(1, Math.min(100, raw)) : 60; return 1 / (1 + (ldr - 60) / 200); } // R213 자체 잠정값: 주장 통솔60 기준. 주 피해·공성 반격만, 전법 부수 기준피해는 제외
-  unitDefMult(u, leadership = true) { return (leadership ? this.leadershipDefMult(u) : 1) * (this.unitHasSkill(u, '강직') ? 0.85 : 1) * this.fieldDefMult(u) * (this.elitePike(u) ? 0.92 : 1); }
+  aptitudeDefMult(u) { if (u.type === 'sword') return 1; return 1 / (1 + (this.aptMult(u) - 0.9) * 0.3); } // R214 C-neutral mild defense (.3), commander/type slot; sword unchanged
+  unitDefMult(u, primary = true) { return (primary ? this.leadershipDefMult(u) * this.aptitudeDefMult(u) : 1) * (this.unitHasSkill(u, '강직') ? 0.85 : 1) * this.fieldDefMult(u) * (this.elitePike(u) ? 0.92 : 1); }
   elitePike(u) { return (u.type === 'spear' || u.type === 'pike') && !!this.forces[u.force]?.arts?.['정예창병']; } // 정예창병 (자체 잠정값)
   unitTroopCap(fid) { return 20000 + (this.forces[fid]?.arts?.['군제개혁'] ? 3000 : 0); } // 군제개혁: 부대 병력 상한 +3000 (원작 자료 확인: 무장 통솔 병력 상한 +3000). 기본 20000은 이 게임의 자체 값
   dispatchCap(fid) { return 3; } // 부대 편성 무장 3명 제한 보존 (군제개혁의 「지휘 상한」 의미 미확정이라 변경 안 함)
@@ -1747,7 +1748,7 @@ produceArms(id,key){const g=this;const c=g.cityById[id],a=this.armsInfo(c,key);i
     }
     const lead = this.officers[u.officers[0]];
     let dmg = Math.round(u.troops * 0.12 * ut.atk * (0.7 + lead.war/150) * this.aptMult(u) * this.unitDmgMult(u, true) * this.unitItemAtk(u) * this.unitTechAtk(u) * this.unitRelMult(u) * (1 + 0.1 * this.techLv(u.force, '발명'))); // R12: 의형제·부부 같은 부대 공격 상승
-    let loss = Math.round((c.troops * 0.06 / ut.def + 150) * this.leadershipDefMult(u));
+    let loss = Math.round((c.troops * 0.06 / ut.def + 150) * this.leadershipDefMult(u) * this.aptitudeDefMult(u));
     // 전법: 병종 적성 B 이상 + 기력 소모, 무력이 높을수록 발동 잘됨
     const tac = TACTICS[u.type]; // 검병은 전법 없음(설계 58행)
     const aptLv = u.type === 'sword' ? 1 : APT_LV(lead.apt?.[APT_IDX[u.type]]);
