@@ -1,3 +1,5 @@
+import {duelSwapOptions,swapDuelOfficer} from './duel-swap.js?v=r198';
+
 import {duelSnapshot,restoreDuel} from './duel-save.js?v=r197';
 
 // 게임 상태·턴 엔진 (삼국지11 기본 구조의 단순화 1차 구현)
