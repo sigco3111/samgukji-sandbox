@@ -1,13 +1,13 @@
 // 진입점: 화면 전환·UI·지도 연결
-import { Map3D, toWorld } from './map3d.js?v=r196';
-import { Game, SAVE_KEY, RULES, forceColor, UNIT_TYPES, ARTS, OFFICES, restoreOfficer, FIELD_FACS, TRAPS, SHIP_TYPES, TAC_SHIP_OK, josa, josaRo, TECH_BRANCHES, TECH_P, TECH_GOLD, TECH_DESC, FACILITIES, ITEMS, SIEGE_BUILD, SHIP_BUILD, ARMS_BUILD, AB_BRANCHES, AB_P, AB_SKILL, AB_PICK } from './game.js?v=r196';
-import { aiThink } from './ai.js?v=r196';
-import { rosterRows, rosterOfficer, rosterRelations } from './officer-roster.js?v=r196';
+import { Map3D, toWorld } from './map3d.js?v=r197';
+import { Game, SAVE_KEY, RULES, forceColor, UNIT_TYPES, ARTS, OFFICES, restoreOfficer, FIELD_FACS, TRAPS, SHIP_TYPES, TAC_SHIP_OK, josa, josaRo, TECH_BRANCHES, TECH_P, TECH_GOLD, TECH_DESC, FACILITIES, ITEMS, SIEGE_BUILD, SHIP_BUILD, ARMS_BUILD, AB_BRANCHES, AB_P, AB_SKILL, AB_PICK } from './game.js?v=r197';
+import { aiThink } from './ai.js?v=r197';
+import { rosterRows, rosterOfficer, rosterRelations } from './officer-roster.js?v=r197';
 
 const $ = id => document.getElementById(id);
 let DATA = null, game = null, map = null, selectedUnit = null, autoTimer = null, pendingFire = null; // R15: 직접 전법·계략 대기
 
-const BUILD_ID = 'r196'; // 빌드 ID (index.html의 meta[name=build]와 같아야 함 - 오래된 캐시된 index와 새 스크립트의 혼합 감지)
+const BUILD_ID = 'r197'; // 빌드 ID (index.html의 meta[name=build]와 같아야 함 - 오래된 캐시된 index와 새 스크립트의 혼합 감지)
 function checkBuildSkew() {
   const idx = document.querySelector('meta[name="build"]')?.content;
   if (idx === BUILD_ID) { sessionStorage.removeItem('cheonha-xi-web.skew'); return; } // 일치하면 재시도 표식 해제
@@ -20,7 +20,7 @@ checkBuildSkew();
 async function loadData() {
   const [officers, skills, portraits, s184, s190, s251] = await Promise.all(
     ['data/officers670.json','data/skills.json','data/portraits.json','data/scenario-184.json','data/scenario-190.json','data/scenario-251.json']
-      .map(u => fetch(u + '?v=r196').then(r => r.json())));
+      .map(u => fetch(u + '?v=r197').then(r => r.json())));
   const byIdx = {};
   for (const o of officers) byIdx[o.idx] = o;
   DATA = { officers: byIdx, skills, portraits, scenarios: { '184': s184, '190': s190, '251': s251 } };
@@ -295,7 +295,7 @@ function showDuel() {
       <p><button class="cmd" id="duel-go">합 진행</button> <button class="cmd" id="duel-auto">위임 (자동)</button></p></div>`;
     let selStance = P.stance, selCmd = null;
     m.querySelectorAll('.duel-stance').forEach(b => b.onclick = () => { selStance = b.dataset.s; m.querySelectorAll('.duel-stance').forEach(x => x.style.borderColor = ''); b.style.borderColor = '#ffd700'; });
-    const playerTick = sel => game.duelTick(d, pk === 'a' ? sel : game.duelPolicy(d, 'a'), pk === 'a' ? game.duelPolicy(d, 'b') : sel); // 플레이어 선택은 플레이어 측(pk)에 배정
+    const playerTick = sel => { game.duelTick(d, pk === 'a' ? sel : game.duelPolicy(d, 'a'), pk === 'a' ? game.duelPolicy(d, 'b') : sel); game.autosave(); }; // 플레이어 선택은 플레이어 측(pk)에 배정
     m.querySelectorAll('.duel-cmd').forEach(b => b.onclick = () => { selCmd = b.dataset.c; playerTick({ stance: selStance, cmd: selCmd }); after(); });
     $('duel-go').onclick = () => { playerTick({ stance: selStance, cmd: null }); after(); };
     $('duel-auto').onclick = () => { game.duelAuto(d); after(); };
@@ -1243,8 +1243,10 @@ async function boot() {
       for (const [i, st] of Object.entries(d.officerStates)) if (DATA.officers[i]) restoreOfficer(DATA.officers[i], st); // R84: 복원 공통화 (R13 연구 + 관직 능력 가산 재적용)
       if (g.pendingJoin != null && (!g.forces[g.pendingJoin]?.alive || g.pendingJoin === g.playerForce)) { g.log(`참가 요청한 ${josa('【' + g.forceName(g.pendingJoin) + '】군', ['이','가'])} 멸망하여 참가 요청이 취소되었습니다. 다른 세력을 선택해 주세요.`, true); g.pendingJoin = null; } // R128: 로드 시 무효 참가 요청 정리 — 중복 인계 없음 (인계는 턴 경계 1회)
       g._reconcileOfficerRosters(); // R96: 구 저장의 로스터 누락·타 세력 로스터 잔류 무장 복귀 (멱등)
+      g.restoreDuel(d.pendingDuel); // R197: reattach only after canonical unit/officer reconciliation
       game = g; enterGame(); refreshAll(); checkGameOver(); // R14: 저장 시점이 종료 상태면 모달 재표시
-      if ((game.pendingDiplo ?? []).length) showDiploIn(); // R123: 저장 시점의 보류 제안은 효과 재적용 없이 결정 모달만 복원
+      if (game.pendingDuel) showDuel();
+      else if ((game.pendingDiplo ?? []).length) showDiploIn(); // R123: 저장 시점의 보류 제안은 효과 재적용 없이 결정 모달만 복원
       if (game.delegated) setAuto(true);
     };
   }
