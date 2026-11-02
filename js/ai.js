@@ -2,7 +2,9 @@ import {supply} from './arms-policy.js?v=r210';
 import { SHIP_TYPES, TRAPS, FIELD_FACS, SIEGE_TYPES } from './game.js?v=r210';
 // 세력 AI — 위임 시 플레이어 세력도 이 AI가 운영 (위임·샌드박스의 실질 주체)
 export function aiThink(game, fid, legion = null) { // legion 지정 시 그 군단 소속 도시만 운영 (도독 위임)
-  if (game.pendingDebate) return; // R210: 협상 결착 전 후속 AI 명령으로 협상자를 이동시키지 않음
+  const waiting = game.pendingDebate;
+  const speakerForces = waiting ? [waiting.a.o, waiting.b.o].map(i => game.officers[i]?.state).filter(st => ['ruler', 'taesu', 'serving'].includes(st?.status)).map(st => st.force) : [];
+  if (waiting && [waiting.ctx.fid, waiting.ctx.tid, ...speakerForces].includes(fid)) return; // R210: 당사자 세력만 후속 명령 대기
   const f = game.forces[fid];
   if (!f || !f.alive) return;
   let cities = game.forceCities(fid);
@@ -96,7 +98,7 @@ export function aiThink(game, fid, legion = null) { // legion 지정 시 그 군
         const cand = Object.values(game.forces).filter(t => t.alive && t.id !== fid && !game.isAllied(fid, t.id) && game.relation(fid, t.id) >= 60)
           .sort((x, y) => game.relation(fid, y.id) - game.relation(fid, x.id))[0];
         if (cand) game.proposeAlliance(fid, cand.id, from.id);
-        if (game.pendingDebate) return;
+        if (game.pendingDebate && game.pendingDebate !== waiting) return;
       }
       // 불화 이하 + 수세(도시 2개 이하 또는 위협 도시)면 정전 요청 (50% 확률)
       if (f.ap >= 30 && from.gold >= 2000 && Math.random() < 0.5) {
@@ -105,7 +107,7 @@ export function aiThink(game, fid, legion = null) { // legion 지정 시 그 군
           const foe = Object.values(game.forces).filter(t => t.alive && t.id !== fid && !game.isPeace(fid, t.id) && game.relation(fid, t.id) <= 39)
             .sort((x, y) => game.relation(fid, x.id) - game.relation(fid, y.id))[0];
           if (foe) game.requestTruce(fid, foe.id, from.id);
-          if (game.pendingDebate) return;
+          if (game.pendingDebate && game.pendingDebate !== waiting) return;
         }
       }
     }
@@ -135,9 +137,11 @@ export function aiThink(game, fid, legion = null) { // legion 지정 시 그 군
     if (f.ap < 20 + apReserve || c.gold < 300 || !c.officers.length) continue;
     const targets = [...game.freeOfficers(c.id), ...(game.captiveOfficers ? game.captiveOfficers(c.id) : []), ...Object.values(game.officers).filter(o => game.foreignRecruitTarget(c.id, o.idx))]; // R193: same eligibility and paid command for AI
     if (!targets.length) continue;
-    const target = targets.sort((a, b) => game.recruitChance(c.id, b.idx) - game.recruitChance(c.id, a.idx))[0];
+    const available = targets.filter(o => !game.pendingDebate || ![game.pendingDebate.a.o, game.pendingDebate.b.o].includes(o.idx));
+    if (!available.length) continue;
+    const target = available.sort((a, b) => game.recruitChance(c.id, b.idx) - game.recruitChance(c.id, a.idx))[0];
     if (game.recruitChance(c.id, target.idx) >= 0.3) game.recruitOfficer(c.id, target.idx);
-    if (game.pendingDebate) return;
+    if (game.pendingDebate && game.pendingDebate !== waiting) return;
   }
   // 2.7) 기교 연구: 플레이어와 같은 비용·효과 규칙. 주력 병종 계통 우선, 없으면 방어 계통
   if (!legion) {
