@@ -1,20 +1,21 @@
-import {mountBattleReport} from './battle-report.js?v=r242';
-import {overlappingUnits} from './unit-overlap.js?v=r242';
-import {unitNearbyCities} from './unit-city-access.js?v=r242';
-import {unitOrderText} from './unit-order.js?v=r242';
-import {facilityEffectDesc} from './facility-desc.js?v=r242';
-import {mountDebate} from './debate-ui.js?v=r242';
-import {mountDuel} from './duel-ui.js?v=r242';
+import {mountAim} from './aim-targets.js?v=r244';
+import {mountBattleReport} from './battle-report.js?v=r244';
+import {overlappingUnits} from './unit-overlap.js?v=r244';
+import {unitNearbyCities} from './unit-city-access.js?v=r244';
+import {unitOrderText} from './unit-order.js?v=r244';
+import {facilityEffectDesc} from './facility-desc.js?v=r244';
+import {mountDebate} from './debate-ui.js?v=r244';
+import {mountDuel} from './duel-ui.js?v=r244';
 // 진입점: 화면 전환·UI·지도 연결
-import { Map3D, toWorld } from './map3d.js?v=r242';
-import { Game, SAVE_KEY, RULES, forceColor, UNIT_TYPES, ARTS, OFFICES, restoreOfficer, FIELD_FACS, TRAPS, SHIP_TYPES, TAC_SHIP_OK, josa, josaRo, TECH_BRANCHES, TECH_P, TECH_GOLD, TECH_DESC, FACILITIES, ITEMS, SIEGE_BUILD, SHIP_BUILD, ARMS_BUILD, AB_BRANCHES, AB_P, AB_SKILL, AB_PICK } from './game.js?v=r242';
-import { aiThink } from './ai.js?v=r242';
-import { rosterRows, rosterOfficer, rosterRelations } from './officer-roster.js?v=r242';
+import { Map3D, toWorld } from './map3d.js?v=r244';
+import { Game, SAVE_KEY, RULES, forceColor, UNIT_TYPES, ARTS, OFFICES, restoreOfficer, FIELD_FACS, TRAPS, SHIP_TYPES, TAC_SHIP_OK, josa, josaRo, TECH_BRANCHES, TECH_P, TECH_GOLD, TECH_DESC, FACILITIES, ITEMS, SIEGE_BUILD, SHIP_BUILD, ARMS_BUILD, AB_BRANCHES, AB_P, AB_SKILL, AB_PICK } from './game.js?v=r244';
+import { aiThink } from './ai.js?v=r244';
+import { rosterRows, rosterOfficer, rosterRelations } from './officer-roster.js?v=r244';
 
 const $ = id => document.getElementById(id);
 let DATA = null, game = null, map = null, selectedUnit = null, autoTimer = null, pendingFire = null; // R15: 직접 전법·계략 대기
 
-const BUILD_ID = 'r242'; // 빌드 ID (index.html의 meta[name=build]와 같아야 함 - 오래된 캐시된 index와 새 스크립트의 혼합 감지)
+const BUILD_ID = 'r244'; // 빌드 ID (index.html의 meta[name=build]와 같아야 함 - 오래된 캐시된 index와 새 스크립트의 혼합 감지)
 function checkBuildSkew() {
   const idx = document.querySelector('meta[name="build"]')?.content;
   if (idx === BUILD_ID) { sessionStorage.removeItem('cheonha-xi-web.skew'); return; } // 일치하면 재시도 표식 해제
@@ -27,7 +28,7 @@ checkBuildSkew();
 async function loadData() {
   const [officers, skills, portraits, s184, s190, s251] = await Promise.all(
     ['data/officers670.json','data/skills.json','data/portraits.json','data/scenario-184.json','data/scenario-190.json','data/scenario-251.json']
-      .map(u => fetch(u + '?v=r242').then(r => r.json())));
+      .map(u => fetch(u + '?v=r244').then(r => r.json())));
   const byIdx = {};
   for (const o of officers) byIdx[o.idx] = o;
   DATA = { officers: byIdx, skills, portraits, scenarios: { '184': s184, '190': s190, '251': s251 } };
@@ -489,12 +490,11 @@ function tacticFailWhy(pf, hit) { // R74: 발동 실패 사유를 대상 종류�
   if (pf.kind === 'tactic' && hit && hit.type === 'city') return '도시는 기본 공격으로 공략합니다. 전법은 부대를 대상으로 하며, 병기 부대만 도시에 쓸 수 있습니다.';
   return targetHint(pf);
 }
-function onPick(nx, ny) {
-  if (!game || game.over) return;
-  const cmdMode = pendingFire == null && selectedUnit != null && !game.delegated && !!game.units.find(u => u.id === selectedUnit && u.force === game.playerForce); // R72c: 명령 모드 = 플레이어가 명령 가능한 아군 부대 선택 중일 때만 (적 부대 조회 중에는 목표 우선 아님)
-  const hit = map.pick(nx, ny, cmdMode, pendingFire && pendingFire.kind !== 'calm' ? pendingFire.uid : null); // R72b: 명령 모드에서는 도시·시설 목표를 부대 재선택보다 우선 (전법·계략 조준 중에는 부대 우선 유지)
-  if (pendingFire) { // R15: 직접 전법·계략 대상 선택
-    const pf = pendingFire; pendingFire = null;
+function completeAim(pf,hit){
+  const logBefore=game.logs.at(-1);pendingFire = null;
+  const caster=game.units.find(x=>x.id===pf.uid);
+  if(!caster||game.delegated||caster.force!==game.playerForce)return;
+  if(hit?.type==='unit'){const d=game.units.find(x=>x.id===hit.id);if(!d||!game.inVision(d.x,d.z))return;}
     let ok = false;
     if (hit && hit.type === 'unit') ok = pf.kind === 'tactic' ? game.fireTactic(pf.uid, { type: 'unit', id: hit.id }, pf.tid) : game.fireStrat(pf.uid, pf.kind, { type: 'unit', id: hit.id });
     else if (hit && hit.type === 'city') ok = pf.kind === 'tactic' ? game.fireTactic(pf.uid, { type: 'city', id: hit.id }, pf.tid) : game.fireStrat(pf.uid, pf.kind, { type: 'city', id: hit.id });
@@ -502,6 +502,15 @@ function onPick(nx, ny) {
     selectedUnit = null;
     if (ok) { refreshAll(); if (game.units.find(x => x.id === pf.uid)) { selectedUnit = pf.uid; showUnitPanel(pf.uid); } else $('panel').classList.add('hidden'); }
     else { game.log(tacticFailWhy(pf, hit), true); refreshLog(); showUnitPanel(pf.uid); } // R74: 대상 종류별 구체 사유
+    if(!game.units.some(x=>x.id===pf.uid))return;const feedback=document.createElement('p');feedback.className='aim-result';feedback.setAttribute('role','status');feedback.textContent=game.logs.at(-1)!==logBefore?game.logs.at(-1).msg:(ok?'명령 처리됨':'발동할 수 없습니다');$('panel').prepend(feedback);
+
+}
+function onPick(nx, ny) {
+  if (!game || game.over) return;
+  const cmdMode = pendingFire == null && selectedUnit != null && !game.delegated && !!game.units.find(u => u.id === selectedUnit && u.force === game.playerForce); // R72c: 명령 모드 = 플레이어가 명령 가능한 아군 부대 선택 중일 때만 (적 부대 조회 중에는 목표 우선 아님)
+  const hit = map.pick(nx, ny, cmdMode, pendingFire && pendingFire.kind !== 'calm' ? pendingFire.uid : null); // R72b: 명령 모드에서는 도시·시설 목표를 부대 재선택보다 우선 (전법·계략 조준 중에는 부대 우선 유지)
+  if (pendingFire) { // R15: 직접 전법·계략 대상 선택
+    completeAim(pendingFire,hit);
     return;
   }
   if (!hit) { $('panel').classList.add('hidden'); selectedUnit = null; return; }
@@ -1201,8 +1210,7 @@ function showUnitPanel(uid) {
   p.querySelectorAll('.up-city').forEach(b => b.onclick = () => { const live = game.units.find(x=>x.id===uid), c = unitNearbyCities(live,game.cities).find(x=>x.id===Number(b.dataset.c)); if (!c) return; selectedUnit = null; pendingFire = null; lastCityId = c.id; showCityPanel(c); });
   const armFire = (kind, label, tid = null) => { // R15: 대상 선택 모드 진입
     pendingFire = { uid: u.id, kind, tid };
-    p.innerHTML = `<h3>${u.label} — ${label}</h3><p style="color:#ffd700">인접한 적 부대나 도시를 클릭하면 발동합니다.</p><p><button class="cmd" id="up-cancel">취소</button></p>`;
-    $('up-cancel').onclick = () => { pendingFire = null; showUnitPanel(u.id); };
+    const pf=pendingFire;mountAim({g:game,pf,label,box:p,onTarget:t=>{if(pendingFire!==pf)return;completeAim(pf,t)},onCancel:()=>{pendingFire=null;showUnitPanel(u.id)}});
   };
   document.querySelectorAll('#panel .up-tac').forEach(b => { b.onclick = () => { const o = game.tacticInfo(u).opts.find(x => x.id === b.dataset.tid); armFire('tactic', `전법 ${o.name}`, o.id); }; });
   document.querySelectorAll('#panel .up-ff').forEach(b => { b.onclick = () => { // R26
