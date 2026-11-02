@@ -1993,23 +1993,23 @@ console.log('sample logs:'); for (const l of g.logs.slice(-8)) console.log(' ', 
   u4.tx = null; // 이동 명령 없음
   u4.x = 0; u4.z = 0; // 아군 도시 보급권 밖으로 이동
   const e0 = u4.troops;
-  g4.endTurn(aiThink); settle4();
+  g4.endTurn(()=>{}); settle4();
   const full = Math.round(5000 * 0.4 * 6);
   if (u4.food == null || u4.food >= full) fail('구 세이브 병량 초기화 ' + u4.food);
   u4.food = 0;
   const t5 = u4.troops;
-  g4.endTurn(aiThink); settle4();
+  g4.endTurn(()=>{}); settle4();
   if (u4.troops !== t5 - Math.max(1, Math.round(t5 * 0.03))) fail('부대 아사 탈영 ' + (t5 - u4.troops));
   // 6) 아군 도시 인접 보급
   const home4 = g4.forceCities(0)[0];
   u4.x = home4.lon; u4.z = home4.lat; u4.food = 0; home4.food = 50000;
-  g4.endTurn(aiThink); settle4();
+  g4.endTurn(()=>{}); settle4();
   const full2 = Math.round(u4.troops * 0.4 * 6);
   if (u4.food <= 0) fail('인접 보급 ' + u4.food);
   // 7) 합류 시 잔여 병량 회수
   u4.tx = home4.lon; u4.tz = home4.lat; u4.targetCity = home4.id; u4.path = []; u4.x = home4.lon; u4.z = home4.lat; u4.food = 1000;
   const hf0 = home4.food;
-  g4.endTurn(aiThink); settle4();
+  g4.endTurn(()=>{}); settle4();
   if (g4.units.includes(u4)) fail('합류 미처리');
   const eat7 = Math.round(u4.troops * 0.4 / 3);
   if (Math.abs((home4.food - hf0) - (1000 - eat7)) > 2) fail('합류 병량 회수 ' + (home4.food - hf0) + ' 기대 ' + (1000 - eat7));
