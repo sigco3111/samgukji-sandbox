@@ -1,3 +1,4 @@
+import {contestResult,showContestResult} from './contest-result.js?v=r220';
 import {contestDelta,contestSnapshots} from './contest-feedback.js?v=r217';
 // Display-only debate view. Cards and outcome rules remain in Game.
 export function mountDebate({game,d,m,portraitCss,save,finish}) {
@@ -14,7 +15,7 @@ export function mountDebate({game,d,m,portraitCss,save,finish}) {
  const available=[];m.querySelectorAll('.debate-card').forEach(b=>{const c=b.dataset.c,owned=!!game.debateCards(P.o)[c],cd=Math.max(0,P.cds[c]??0),can=game.debateCardUsable(d,pk,c);b.disabled=!can;b.textContent=c+(cd?` (쿨 ${cd})`:'')+(owned?'':' 🔒');b.title=can?`${c} 사용`:!owned?'지력 또는 서적 필요':P.seal?'이번 화술은 봉인됨':`재사용까지 ${cd}합`;if(can)available.push(c)});
  $('debate-status').textContent=P.seal?'화술 봉인 중: 위임으로 다음 합을 진행할 수 있습니다.':available.length?`사용 가능: ${available.join(' · ')}`:'사용 가능한 화술 없음: 위임으로 진행할 수 있습니다.';
  }
- function after(){if(game.pendingDebate===d&&!d.done)render();else{disposed=true;if(m.debateOwner===owner)delete m.debateOwner;finish()}}
+ function after(){if(game.pendingDebate===d&&!d.done)render();else{showContestResult(m.ownerDocument,contestResult('debate',d,{a:game.officers[d.a.o].name_ko,b:game.officers[d.b.o].name_ko}));disposed=true;if(m.debateOwner===owner)delete m.debateOwner;finish()}}
  m.querySelectorAll('.debate-card').forEach(b=>b.onclick=()=>{if(!active()||b.disabled)return;const c=b.dataset.c;game.debateTick(d,pk==='a'?c:game.debatePolicy(d,'a'),pk==='a'?game.debatePolicy(d,'b'):c);save();after();if(active()&&b.disabled)$('debate-auto').focus()});
  $('debate-auto').onclick=()=>{if(!active())return;game.debateAuto(d);save();after()};render();return{dispose(){disposed=true;if(m.debateOwner===owner)delete m.debateOwner}};
 }
