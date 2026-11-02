@@ -1,3 +1,4 @@
+import {contestResult,showContestResult} from './contest-result.js?v=r220';
 import {contestDelta,contestSnapshots} from './contest-feedback.js?v=r217';
 import {createDuelClock} from './duel-clock.js?v=r199';
 // A modal owns one clock. The engine is still entirely turn/bout based.
@@ -33,13 +34,14 @@ export function mountDuel({game,d,m,portraitCss,save,finish,doc=document}) {
     $('duel-status').textContent=clock.running?'실시간 진행 중':'정지 중';
     $('duel-play').disabled=clock.running;$('duel-pause').disabled=!clock.running;$('duel-go').disabled=clock.running;
   }
+  function present(){showContestResult(doc,contestResult('duel',d,{a:game.duelOfficer(d,'a').name_ko,b:game.duelOfficer(d,'b').name_ko}));}
   function dispose(){if(disposed)return;clock.dispose();disposed=true;doc.removeEventListener('visibilitychange',visibility);if(m.duelOwner===owner)delete m.duelOwner;}
   function tick(){
     if(!active()){dispose();return;}
     const sel={stance:d[pk].stance,cmd:queued};queued=null;
     game.duelTick(d,pk==='a'?sel:game.duelPolicy(d,'a'),pk==='a'?game.duelPolicy(d,'b'):sel);
     if(!save())clock.pause();
-    if(game.pendingDuel!==d||d.done){dispose();finish();return;}render();
+    if(game.pendingDuel!==d||d.done){present();dispose();finish();return;}render();
   }
   const clock=createDuelClock({tick,active,hidden:()=>doc.hidden,onState:()=>render()});
   const visibility=()=>{if(doc.hidden)clock.pause();};doc.addEventListener('visibilitychange',visibility);
@@ -47,6 +49,6 @@ export function mountDuel({game,d,m,portraitCss,save,finish,doc=document}) {
   m.querySelectorAll('.duel-cmd').forEach(b=>b.onclick=()=>{if(!active()||b.disabled)return;queued=queued===b.dataset.c?null:b.dataset.c;render();});
   $('duel-play').onclick=()=>{if(game.saveFailed||!active())return;clock.start();if(clock.running)$('duel-pause').focus();};$('duel-pause').onclick=()=>{clock.pause();if(active())$('duel-play').focus();};
   $('duel-go').onclick=()=>{if(!clock.running)tick();};
-  $('duel-auto').onclick=()=>{if(!active())return;clock.pause();queued=null;game.duelAuto(d);save();dispose();finish();};
+  $('duel-auto').onclick=()=>{if(!active())return;clock.pause();queued=null;game.duelAuto(d);save();present();dispose();finish();};
   render();return {dispose,pause:()=>clock.pause()};
 }
