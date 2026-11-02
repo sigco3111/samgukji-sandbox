@@ -395,3 +395,6 @@ Actual190MaTeng manual cavalry approach/charge/return exposed repeated last-wayp
 
 ## R210 pending-debate AI boundary candidate
 Natural legion turn 87 exposed dispatch of speaker 439 after opening a captive debate; Continue safely rejected the invalid event. Narrow guards stop the affected forces, protect two speakers from third-party AI recruitment, and prevent another debate replacing the paid wait. Other forces continue. Focused 44/full 58. Same-fixture broad/narrow comparison documents real AP/economy differences. Narrow actual UI: three card bouts, new-page restore, settlement, turn-88 dispatch. Earlier global-candidate turn-98 capture is not reused as narrow proof. No restore loosening. [Scope and evidence](debate-wait-r210.md). Candidate, not yet live.
+
+## R211 victory continuation reload candidate
+Explicit near-victory fixture exposed the unification modal recurring after Continue spectating and reload. UI guard respects `unified=true, over=false`; first victory and ended/legacy reload remain. Actual continued turn105 manual farm45→52/gold514→214/AP35→5. Event97/UI98 clock boundary retained, no guessed event-time persistence. Focused10/full59. [Evidence and limits](victory-continue-r211.md). Candidate, not live.

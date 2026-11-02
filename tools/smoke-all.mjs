@@ -3,6 +3,7 @@
 import { spawnSync } from 'child_process';
 const SUITES = [
  'tools/smoke-r210-debatewait.mjs',
+ 'tools/smoke-r211-victory.mjs',
  'tools/smoke-r209-waypoint.mjs',
  'tools/smoke-r208-neutral.mjs',
  'tools/smoke-r206-reviewowner.mjs',
