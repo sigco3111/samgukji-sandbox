@@ -80,3 +80,5 @@ select { background:#3a3226; color:#e8e0d0; border:1px solid #6b5d43; font-famil
 #contest-result p{color:#eee;margin:7px 0}#contest-result small{color:#bcb49c}#contest-result button{flex:none}
 
 .battle-report {border:1px solid #66573c;border-radius:6px;padding:10px;margin:8px 0;text-align:left;overflow-wrap:anywhere}.battle-report h4{margin:0 0 9px;color:#ffe3a0}.battle-report p{margin:6px 0;line-height:1.5}
+
+.aim-result{padding:9px;background:#3b321e;border:1px solid #b89c53;color:#ffe3a0;line-height:1.45}.aim-target{margin:4px 5px 4px 0}
