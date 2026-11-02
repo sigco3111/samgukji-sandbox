@@ -1,13 +1,14 @@
+import {mountDuel} from './duel-ui.js?v=r199';
 // 진입점: 화면 전환·UI·지도 연결
-import { Map3D, toWorld } from './map3d.js?v=r198';
-import { Game, SAVE_KEY, RULES, forceColor, UNIT_TYPES, ARTS, OFFICES, restoreOfficer, FIELD_FACS, TRAPS, SHIP_TYPES, TAC_SHIP_OK, josa, josaRo, TECH_BRANCHES, TECH_P, TECH_GOLD, TECH_DESC, FACILITIES, ITEMS, SIEGE_BUILD, SHIP_BUILD, ARMS_BUILD, AB_BRANCHES, AB_P, AB_SKILL, AB_PICK } from './game.js?v=r198';
-import { aiThink } from './ai.js?v=r198';
-import { rosterRows, rosterOfficer, rosterRelations } from './officer-roster.js?v=r198';
+import { Map3D, toWorld } from './map3d.js?v=r199';
+import { Game, SAVE_KEY, RULES, forceColor, UNIT_TYPES, ARTS, OFFICES, restoreOfficer, FIELD_FACS, TRAPS, SHIP_TYPES, TAC_SHIP_OK, josa, josaRo, TECH_BRANCHES, TECH_P, TECH_GOLD, TECH_DESC, FACILITIES, ITEMS, SIEGE_BUILD, SHIP_BUILD, ARMS_BUILD, AB_BRANCHES, AB_P, AB_SKILL, AB_PICK } from './game.js?v=r199';
+import { aiThink } from './ai.js?v=r199';
+import { rosterRows, rosterOfficer, rosterRelations } from './officer-roster.js?v=r199';
 
 const $ = id => document.getElementById(id);
 let DATA = null, game = null, map = null, selectedUnit = null, autoTimer = null, pendingFire = null; // R15: 직접 전법·계략 대기
 
-const BUILD_ID = 'r198'; // 빌드 ID (index.html의 meta[name=build]와 같아야 함 - 오래된 캐시된 index와 새 스크립트의 혼합 감지)
+const BUILD_ID = 'r199'; // 빌드 ID (index.html의 meta[name=build]와 같아야 함 - 오래된 캐시된 index와 새 스크립트의 혼합 감지)
 function checkBuildSkew() {
   const idx = document.querySelector('meta[name="build"]')?.content;
   if (idx === BUILD_ID) { sessionStorage.removeItem('cheonha-xi-web.skew'); return; } // 일치하면 재시도 표식 해제
@@ -20,7 +21,7 @@ checkBuildSkew();
 async function loadData() {
   const [officers, skills, portraits, s184, s190, s251] = await Promise.all(
     ['data/officers670.json','data/skills.json','data/portraits.json','data/scenario-184.json','data/scenario-190.json','data/scenario-251.json']
-      .map(u => fetch(u + '?v=r198').then(r => r.json())));
+      .map(u => fetch(u + '?v=r199').then(r => r.json())));
   const byIdx = {};
   for (const o of officers) byIdx[o.idx] = o;
   DATA = { officers: byIdx, skills, portraits, scenarios: { '184': s184, '190': s190, '251': s251 } };
@@ -79,6 +80,7 @@ function startGame(scenId, fid) {
   refreshAll();
 }
 function enterGame() {
+  duelView?.dispose(); duelView=null;
   game.onSaveStatus = refreshSaveNotice;
   show('screen-game');
   if (!map) {
@@ -267,46 +269,16 @@ function afterDiplo() { // 결정 후속: 로그·HUD 갱신 → 거절에 상�
   if ((game.pendingDiplo ?? []).length) { showDiploIn(); return; }
   refreshAll(); checkGameOver(); // 항복 수락 등으로 세력이 사라졌다면 필수 선택을 즉시 표시
 }
-// === R10: 일기토 모달 (클릭당 1합 — 실시간은 모달 특성상 수동 진행으로 단순화) ===
+// === R10 / R199: real-time duel UI; combat engine and AI remain bout based ===
+let duelView = null;
 function showDuel() {
-  const d = game.pendingDuel; if (!d) return;
-  const m = $('modal'); m.classList.remove('hidden');
-  const pk = d.a.u.force === game.playerForce ? 'a' : 'b', ek = pk === 'a' ? 'b' : 'a';
-  const STANCES = [['attack', '공격 중시'], ['defense', '방어 중시'], ['spirit', '투지 중시'], ['burst', '일발 중시']];
-  const CMDS = [['필살기', 100], ['급소', 200], ['무쌍', 300], ['암기', 0], ['퇴각', 0], ['위퇴각', 0]];
-  const render = () => {
-    const P = d[pk], E = d[ek];
-    const po = game.duelOfficer(d, pk), eo = game.duelOfficer(d, ek);
-    const bar = (v, max, color) => `<span style="display:inline-block;width:120px;height:10px;background:#333;vertical-align:middle"><span style="display:block;width:${Math.max(0, Math.min(100, v / max * 100))}%;height:100%;background:${color}"></span></span>`;
-    const cmdBtn = ([name, need]) => {
-      let ok = P.spirit >= need;
-      if (name === '암기') ok = ok && !P._hiddenUsed && game.unitHasItemKind(P.u, 'weapon');
-      if (name === '위퇴각') ok = ok && game.unitHasItemKind(P.u, 'bow');
-      return `<button class="cmd duel-cmd" data-c="${name}" ${ok ? '' : 'disabled'}>${name}${need ? ` (투지${need})` : ''}</button>`;
-    };
-    m.innerHTML = `<div class="box" style="min-width:420px">
-      <h3 style="color:#f66;text-align:center">일기토 (${d.bout}합)</h3>
-      <p style="text-align:center;margin:4px 0"><span class="pimg" style="${portraitCss(po.idx)};display:inline-block;width:64px;height:64px;border:2px solid #d44;border-radius:4px;vertical-align:middle"></span> <b style="font-size:20px;color:#f66;vertical-align:middle"> VS </b> <span class="pimg" style="${portraitCss(eo.idx)};display:inline-block;width:64px;height:64px;border:2px solid #47d;border-radius:4px;vertical-align:middle"></span><br><b>${po.name_ko}</b> vs <b>${eo.name_ko}</b></p>
-      <p>${po.name_ko} 체력 ${bar(P.hp, 100, '#d44')} ${Math.max(0, P.hp)} · 투지 ${bar(P.spirit, 300, '#4a7fd4')} ${P.spirit}<br>
-      ${eo.name_ko} 체력 ${bar(E.hp, 100, '#d44')} ${Math.max(0, E.hp)} · 투지 ${bar(E.spirit, 300, '#4a7fd4')} ${E.spirit}</p>
-      <p style="font-size:12px;color:#cbB;min-height:54px">${d.log.slice(-3).join('<br>')}</p>
-      <p>방침: ${STANCES.map(([s, n]) => `<button class="cmd duel-stance" data-s="${s}" ${P.stance === s ? 'style="border-color:#ffd700"' : ''}>${n}</button>`).join(' ')}</p>
-      <p>교체: ${game.duelSwapOptions(d,pk).map(i => `<button class="cmd duel-swap" data-i="${i}">${game.officers[i].name_ko} (체력 ${P.hpMap[i]})</button>`).join(' ') || '<span style="color:#999">기참전 교체 무장 없음</span>'}</p>
-      <p>필살: ${CMDS.map(cmdBtn).join(' ')}</p>
-      <p><button class="cmd" id="duel-go">합 진행</button> <button class="cmd" id="duel-auto">위임 (자동)</button></p></div>`;
-    let selStance = P.stance, selCmd = null;
-    m.querySelectorAll('.duel-stance').forEach(b => b.onclick = () => { selStance = b.dataset.s; m.querySelectorAll('.duel-stance').forEach(x => x.style.borderColor = ''); b.style.borderColor = '#ffd700'; });
-    const playerTick = sel => { game.duelTick(d, pk === 'a' ? sel : game.duelPolicy(d, 'a'), pk === 'a' ? game.duelPolicy(d, 'b') : sel); game.autosave(); }; // 플레이어 선택은 플레이어 측(pk)에 배정
-    m.querySelectorAll('.duel-cmd').forEach(b => b.onclick = () => { selCmd = b.dataset.c; playerTick({ stance: selStance, cmd: selCmd }); after(); });
-    m.querySelectorAll('.duel-swap').forEach(b => b.onclick = () => { if(game.swapDuelOfficer(d,pk,Number(b.dataset.i))) { game.autosave(); render(); } });
-    $('duel-go').onclick = () => { playerTick({ stance: selStance, cmd: null }); after(); };
-    $('duel-auto').onclick = () => { game.duelAuto(d); after(); };
-  };
-  const after = () => {
-    if (game.pendingDuel) render();
-    else { m.classList.add('hidden'); refreshAll(); refreshOpenPanel(); checkGameOver(); }
-  };
-  render();
+  duelView?.dispose(); duelView=null;
+  const d=game.pendingDuel;if(!d)return;
+  const ownerGame=game;
+  duelView=mountDuel({game:ownerGame,d,m:$('modal'),portraitCss,
+    save:()=>ownerGame.autosave(),
+    finish:()=>{ $('modal').classList.add('hidden'); refreshAll(); refreshOpenPanel(); checkGameOver(); }
+  });
 }
 function showSwear(c) { // R12: 의형제 결연 모달
   const m = $('modal'); m.classList.remove('hidden');
@@ -503,6 +475,7 @@ function endModal(text, spectator=false) { // R14: 통일 후 관전 계속 가�
   modal(text, btns);
 }
 function modal(text, buttons) {
+  duelView?.dispose(); duelView=null;
   const m = $('modal'); m.classList.remove('hidden');
   m.innerHTML = `<div class="box"><p>${text}</p>${buttons.map((b,i) => `<button data-i="${i}">${b[0]}</button>`).join('')}</div>`;
   m.querySelectorAll('button').forEach(btn => btn.onclick = () => { m.classList.add('hidden'); buttons[Number(btn.dataset.i)][1](); });
