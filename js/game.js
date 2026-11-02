@@ -2433,12 +2433,16 @@ produceArms(id,key){const g=this;const c=g.cityById[id],a=this.armsInfo(c,key);i
     this.autosave();
     return true;
   }
+  swornEligible(cityId, idx) { // R236: roster presence alone does not prove current service
+    const c = this.cityById[cityId], st = this.officers[idx]?.state;
+    return !!(c && this.forces[c.force]?.alive && c.officers.includes(idx) && st?.force === c.force && st.city === c.id && ['ruler','taesu','serving'].includes(st.status) && (st.merit ?? 0) >= 500);
+  }
   swearBrotherhood(cityId, idxs) { // 의형제 결연: 같은 도시·세력 무장 2~3명, 각 공적 500+, 세력 기교P 500 (설계안 55행 비용) · 충성 +10 (자체)
+    if (!Array.isArray(idxs)) return false;
     idxs = [...new Set(idxs)];
     const c = this.cityById[cityId], f = this.forces[c?.force];
     if (!c || !f?.alive || this._blocked(c)) return false;
-    if (idxs.length < 2 || idxs.length > 3 || idxs.some(i => !c.officers.includes(i))) return false;
-    if (idxs.some(i => (this.officers[i]?.state?.merit ?? 0) < 500)) return false;
+    if (idxs.length < 2 || idxs.length > 3 || idxs.some(i => !this.swornEligible(cityId,i))) return false;
     if ((f.techP ?? 0) < 500) return false;
     f.techP -= 500;
     for (const i of idxs) {
