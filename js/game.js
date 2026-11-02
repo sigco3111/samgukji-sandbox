@@ -500,7 +500,7 @@ export class Game {
         f.hp -= Math.max(10, Math.round(v.troops * 0.02));
       }
       if (TRAPS[f.type]) { // R28: 함정 발동 (1회)
-        const v = this.units.find(x => x.force !== f.force && x.force >= 0 && !SHIP_TYPES.has(x.type) && Math.hypot(x.x - f.x, x.z - f.z) <= sp.r);
+        const v = this.units.find(x => x.force !== f.force && x.force >= 0 && !this.isPeace(x.force, f.force) && !SHIP_TYPES.has(x.type) && Math.hypot(x.x - f.x, x.z - f.z) <= sp.r);
         if (v) {
           const d = Math.max(50, Math.round(v.troops * (f.type === '낙석' ? 0.06 : 0.08))); v.troops = Math.max(1, v.troops - d);
           if (f.type === '불화살함정') v.conf = Math.max(v.conf ?? 0, 1); else v.slowT = 1;
@@ -511,7 +511,7 @@ export class Game {
         continue;
       }
       if (f.type === '투석대') for (const v of this.units) {
-        if (v.force === f.force || Math.hypot(v.x - f.x, v.z - f.z) > sp.r) continue;
+        if (v.force === f.force || (v.force >= 0 && f.force != null && f.force >= 0 && this.isPeace(v.force, f.force)) || Math.hypot(v.x - f.x, v.z - f.z) > sp.r) continue; // R212: 동맹·정전 세력은 자동 시설 공격 대상에서도 제외
         const d = Math.max(100, Math.round(v.troops * 0.04)); v.troops = Math.max(1, v.troops - d);
         if (f._logT !== this.turn) { f._logT = this.turn; this.log(`【야전】투석대가 ${v.label}에 ${d} 피해를 입혔습니다`, f.force === this.playerForce || v.force === this.playerForce); }
       }

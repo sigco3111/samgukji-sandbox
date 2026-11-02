@@ -398,3 +398,7 @@ Natural legion turn 87 exposed dispatch of speaker 439 after opening a captive d
 
 ## R211 victory continuation reload candidate
 Explicit near-victory fixture exposed the unification modal recurring after Continue spectating and reload. UI guard respects `unified=true, over=false`; first victory and ended/legacy reload remain. Actual continued turn105 manual farm45→52/gold514→214/AP35→5. Event97/UI98 clock boundary retained, no guessed event-time persistence. Focused10/full59. [Evidence and limits](victory-continue-r211.md). Candidate, not live.
+
+## R212 field peace and naval integration follow-up
+
+Candidate automatic fire-trap/rockfall/tower target filters now use the existing peace check.18 focused cases and full60 suites; alliance/truce actual UI fixtures retain5000 each. No diplomacy/economy tuning. Naval actual UI route, restore, interception, duel, isolated coastal siege and return/ship recovery are separate fixture evidence, not natural capture or physical-phone verification. See [details and limits](field-peace-r212.md). Candidate, not live.
