@@ -2448,7 +2448,11 @@ produceArms(id,key){const g=this;const c=g.cityById[id],a=this.armsInfo(c,key);i
     return this.pendingDuel;
   }
   duelOfficer(d, k) { const s = d[k]; return this.officers[s.offs[s.cur]]; }
-  duelPolicy(d, k) { // AI 방침 (플레이어 위임 시에도 동일 적용)
+  duelSnapshot() { return duelSnapshot.call(this); }
+  
+  restoreDuel(raw) { return restoreDuel.call(this,raw); }
+  
+duelPolicy(d, k) { // AI 방침 (플레이어 위임 시에도 동일 적용)
     const s = d[k], ok = k === 'a' ? 'b' : 'a', opp = d[ok];
     const myWar = this.effWar(this.duelOfficer(d, k)), opWar = this.effWar(this.duelOfficer(d, ok));
     if (s.spirit >= 300) return { stance: s.stance, cmd: '무쌍' };
