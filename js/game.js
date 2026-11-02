@@ -1604,9 +1604,12 @@ produceArms(id,key){const g=this;const c=g.cityById[id],a=this.armsInfo(c,key);i
     // 세력 전환 인계 (턴 경계)
     if (this.pendingJoin != null) { // R128: 대상 멸망·자기 세력 등 무효 요청은 취소 안내 후 해제 (영구 잔류 방지)
       if (this.forces[this.pendingJoin]?.alive && this.pendingJoin !== this.playerForce) {
-        this.playerForce = this.pendingJoin; this.delegated = false; this.pendingJoin = null;
-        this.monthlyReview = null; this._reviewBase = null; // R206: no previous-force report under the new command
-        this.log(`【${this.forceName(this.playerForce)}】에 참가하여 지휘를 시작합니다.`, true);
+        // R241: finish the current controller's decisions before handing off command.
+        if (!this.pendingDuel && !this.pendingDebate && !(this.pendingDiplo ?? []).length) {
+          this.playerForce = this.pendingJoin; this.delegated = false; this.pendingJoin = null;
+          this.monthlyReview = null; this._reviewBase = null; // R206: no previous-force report under the new command
+          this.log(`【${this.forceName(this.playerForce)}】에 참가하여 지휘를 시작합니다.`, true);
+        }
       } else {
         this.log(`참가 요청한 ${josa('【' + this.forceName(this.pendingJoin) + '】군', ['이','가'])} 멸망하여 참가 요청이 취소되었습니다. 다른 세력을 선택해 주세요.`, true);
         this.pendingJoin = null;
