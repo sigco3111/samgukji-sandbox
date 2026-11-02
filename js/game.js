@@ -1623,6 +1623,7 @@ produceArms(id,key){const g=this;const c=g.cityById[id],a=this.armsInfo(c,key);i
         } else delete this._siegeWatch[c.id];
       }
     }
+    this._reconcilePendingDuel(); // R231: live and restored paths must not settle a removed unit
     this.autosave();
   }
   stepUnit(u) {
@@ -2457,6 +2458,14 @@ produceArms(id,key){const g=this;const c=g.cityById[id],a=this.armsInfo(c,key);i
     const mk = (u) => ({ u, offs: [...u.officers], cur: 0, hp: 100, hpMap: {}, spirit: 0, stance: 'attack', streak: 0, lastStance: null });
     this.pendingDuel = { a: mk(a), b: mk(b), bout: 0, log: [], done: false };
     return this.pendingDuel;
+  }
+  _reconcilePendingDuel() { // R231: later combat in the same turn may remove an already selected participant
+    const d = this.pendingDuel; if (!d) return false;
+    const valid = side => side && this.units.includes(side.u) && side.u.troops > 0 && this.forces[side.u.force]?.alive && side.offs.every(i => side.u.officers.includes(i) && this.officers[i]?.state?.force === side.u.force && ['ruler','taesu','serving'].includes(this.officers[i]?.state?.status));
+    if (valid(d.a) && valid(d.b)) return false;
+    d.done = true; this.pendingDuel = null;
+    this.log('【안내】일기토 참가 부대·무장 상태가 바뀌어 대결을 취소했습니다. 일기토 결과는 적용하지 않았습니다.', true);
+    return true;
   }
   duelOfficer(d, k) { const s = d[k]; return this.officers[s.offs[s.cur]]; }
   duelSwapOptions(d,k) { return duelSwapOptions.call(this,d,k); }
