@@ -1,3 +1,5 @@
+import {duelSwapOptions,swapDuelOfficer} from './duel-swap.js?v=r198';
+
 import {duelSnapshot,restoreDuel} from './duel-save.js?v=r197';
 
 // 게임 상태·턴 엔진 (삼국지11 기본 구조의 단순화 1차 구현)
@@ -2448,7 +2450,11 @@ produceArms(id,key){const g=this;const c=g.cityById[id],a=this.armsInfo(c,key);i
     return this.pendingDuel;
   }
   duelOfficer(d, k) { const s = d[k]; return this.officers[s.offs[s.cur]]; }
-  duelSnapshot() { return duelSnapshot.call(this); }
+  duelSwapOptions(d,k) { return duelSwapOptions.call(this,d,k); }
+  
+  swapDuelOfficer(d,k,idx) { return swapDuelOfficer.call(this,d,k,idx); }
+  
+duelSnapshot() { return duelSnapshot.call(this); }
   
   restoreDuel(raw) { return restoreDuel.call(this,raw); }
   
