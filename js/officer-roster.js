@@ -30,3 +30,8 @@ export function rosterRows(game, query = '', sort = 'name') {
 export function rosterOfficer(game, idx) {
   return rosterRows(game).find(r=>r.idx===idx) ?? null;
 }
+
+export function rosterRelations(game, idx) {
+  const base = (game._rels ?? game.buildRelations())[idx] ?? {sworn:[],spouse:null,dear:[],hate:[]};
+  return {...base,sworn:[...new Set([...base.sworn,...(game.officers[idx]?.state?.sworn??[])])]};
+}
