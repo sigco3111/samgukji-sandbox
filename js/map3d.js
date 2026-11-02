@@ -1,6 +1,7 @@
+import {unitLabelText} from './unit-label.js?v=r218';
 // 3D 저폴리 지도 엔진 (Three.js) - 고정 등각 아이소메트릭 + 계단식 지형 + 성곽/숲
 import * as THREE from 'three';
-import { loadGLBAssets, applyEnvironment } from './assets-3d.js?v=r217';
+import { loadGLBAssets, applyEnvironment } from './assets-3d.js?v=r218';
 
 // R139: 결정적 전역 시설 배치. 지형·성곽·야전 시설·기배치 시설은 비용이 아닌 제외 조건.
 // 자리가 없으면 도시 상단 요약 표식으로 표현하며 수상에 육상 건물을 강제 배치하지 않는다.
@@ -572,6 +573,17 @@ export class Map3D {
     }
     return g;
   }
+  unitLabel(unit) {
+    const info=unitLabelText(unit),cv=document.createElement('canvas');cv.width=256;cv.height=128;
+    const ctx=cv.getContext('2d');ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.strokeStyle='rgba(0,0,0,.9)';ctx.lineWidth=7;
+    for(const [text,y,font,color]of [[info.name,35,'bold 36px "Noto Serif KR", serif','#fff'],[info.troops,88,'bold 30px sans-serif','#ffe5a3']]){
+      ctx.font=font;ctx.strokeText(text,128,y,248);ctx.fillStyle=color;ctx.fillText(text,128,y,248);
+    }
+    const tex=new THREE.CanvasTexture(cv),label=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,depthTest:false,transparent:true}));
+    label.scale.set(4.5,2.25,1);label.position.y=2.5;label.renderOrder=5;return {label,key:info.key};
+  }
+  disposeUnitLabel(label){if(!label)return;label.material.map?.dispose();label.material.dispose();}
   addUnit(unit, colorHex) {
     const g = new THREE.Group();
     const body = this.unitBody(unit.type ?? 'sword'); // R16: 병종별 모델
@@ -579,15 +591,16 @@ export class Map3D {
     const banner = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.34, 0.05),
       new THREE.MeshBasicMaterial({ color: new THREE.Color(colorHex) }));
     banner.position.set(0.3, 1.52, -0.3); g.add(banner); // R117: 병사 실루엣을 가리지 않도록 등 뒤로 축소·후방 이동
-    const label = this.makeLabel(unit.label, 0.6); label.position.y = 2.1; g.add(label);
+    const {label,key:labelKey}=this.unitLabel(unit);g.add(label);
     const y = this.levelAtWorld(unit.x, unit.z) * STEP;
     g.position.set(unit.x, Math.max(y, WATER_Y + 0.2), unit.z);
     g.userData.unitId = unit.id;
     this.unitGroup.add(g);
-    this.unitMeshes[unit.id] = { group: g, banner };
+    this.unitMeshes[unit.id] = { group: g, banner, label, labelKey };
   }
   updateUnit(unit, colorHex) {
     const m = this.unitMeshes[unit.id]; if (!m) return;
+    if(m.labelKey!==unitLabelText(unit).key){const next=this.unitLabel(unit);m.group.remove(m.label);this.disposeUnitLabel(m.label);m.label=next.label;m.labelKey=next.key;m.group.add(m.label);}
     const y = this.levelAtWorld(unit.x, unit.z) * STEP;
     m.group.position.set(unit.x, Math.max(y, WATER_Y + 0.2), unit.z);
     if (colorHex) m.banner.material.color.set(colorHex);
@@ -686,7 +699,7 @@ export class Map3D {
       (this.cityFacMeshes[f.cityId] ??= { meshes: [], sig }).meshes.push(m);
     }
   }
-  removeUnit(id) { const m = this.unitMeshes[id]; if (m) { this.unitGroup.remove(m.group); delete this.unitMeshes[id]; } }
+  removeUnit(id) { const m = this.unitMeshes[id]; if (m) { this.disposeUnitLabel(m.label); this.unitGroup.remove(m.group); delete this.unitMeshes[id]; } }
 
   pick(nx, ny, preferTarget = false, excludeUnitId = null) {
     this.raycaster.setFromCamera(new THREE.Vector2(nx, ny), this.camera);

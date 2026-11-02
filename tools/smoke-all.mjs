@@ -2,6 +2,7 @@
 // 실행: node tools/smoke-all.mjs (repo 루트에서)
 import { spawnSync } from 'child_process';
 const SUITES = [
+ 'tools/smoke-r218-unitlabel.mjs',
  'tools/smoke-r217-feedback.mjs',
  'tools/smoke-r216-facdesc.mjs',
  'tools/smoke-r215-stat-effects.mjs',
