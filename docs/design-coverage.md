@@ -392,3 +392,6 @@ Existingeligibleordinarytarget and threateneddefence remain. If neitherapplies, 
 
 ## R209 natural cavalry return waypoint candidate
 Actual190MaTeng manual cavalry approach/charge/return exposed repeated last-waypoint overshoot atturn13. Clamp existingstep to remainingdistance only. Baseline8steps fail; candidate actualContinue→turn14arrive→15merge1872troops/officers515+558once/errors0. Focused99 includes9landtypes×8speed/terrainmodes exactR208 long-step comparison,3navalpolylines,offensiveengagement/confusion; full57suites/syntax2. Naturalplayerduel didnotoccur. [Scope](waypoint-return-r209.md). Localunpublished; noAI/economyretuning/physicalphoneclaim.
+
+## R210 pending debate AI boundary candidate
+Naturallegion87captive negotiation dispatchedspeaker439afteropeningdebate and Continue safelyrejected event. AIentry/alliance/truce/recruit pendingDebate returns preventfollowuporders; no restoreloosening/cost/policy change. Focused25/full58,3×120turnno-pending exactR209. Actualdiagnosticpaidcards11→restore→12loss→turn88dispatch→98neutralcapture; separate96unforceddebate wins/joins209. Naturalbrokenevent vsdiagnosticsetup explicitlysplit. [Scope](debate-wait-r210.md). Localunpublished.
