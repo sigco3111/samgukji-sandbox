@@ -2613,7 +2613,9 @@ duelPolicy(d, k) { // AI 방침 (플레이어 위임 시에도 동일 적용)
     return d;
   }
   finishDebate(d) { // 승패 적용: 제의측(a) 승리 시 협상 재심 성공, 패배 시 결렬·관계 -5, 15합 무승부 가능 (자체)
-    d.done = true;
+    if (!d || d.done) return d; // R200: settlement is idempotent
+    
+d.done = true;
     const an = this.officers[d.a.o].name_ko, bn = this.officers[d.b.o].name_ko;
     let w = null;
     if (d.a.hp > 0 && d.b.hp <= 0) w = 'a';
