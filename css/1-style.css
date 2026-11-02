@@ -1,0 +1,76 @@
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: 'Noto Serif KR','Nanum Myeongjo',serif; background:#1a1712; color:#e8e0d0; overflow:hidden; }
+.screen { position:fixed; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; background:radial-gradient(ellipse at center,#2a2419 0%,#14110c 100%); padding:20px; }
+.hidden { display:none !important; }
+h1 { font-size:52px; color:#d4af37; letter-spacing:8px; }
+.subtitle { color:#a99; }
+button { font-family:inherit; background:#3a3226; color:#e8e0d0; border:1px solid #6b5d43; padding:8px 18px; cursor:pointer; font-size:15px; border-radius:4px; }
+button:hover { background:#4a4132; }
+button:disabled { opacity:.4; cursor:default; }
+button.big { font-size:20px; padding:14px 44px; }
+.foot { position:absolute; bottom:16px; font-size:12px; color:#776; max-width:520px; text-align:center; }
+#scenario-list, #ruler-list { display:flex; flex-direction:column; gap:10px; max-height:60vh; overflow-y:auto; width:min(480px,92vw); }
+.card { background:#26211a; border:1px solid #554a36; border-radius:6px; padding:12px 16px; cursor:pointer; text-align:left; }
+.card:hover { background:#332c20; border-color:#d4af37; }
+.card h3 { color:#d4af37; font-size:18px; margin-bottom:4px; }
+.card p { font-size:13px; color:#bba; }
+.card .stat { color:#8fa; font-size:12px; }
+#map-canvas { position:fixed; inset:0; width:100%; height:100%; display:block; touch-action:none; }
+#hud-top { position:fixed; top:0; left:0; right:0; display:flex; gap:14px; align-items:center; background:rgba(20,17,12,.88); padding:8px 12px; font-size:14px; border-bottom:1px solid #554a36; z-index:10; flex-wrap:wrap; }
+#hud-top button { padding:5px 14px; font-size:13px; }
+#hud-force { color:#ffd700; font-weight:bold; }
+#hud-speed { flex-basis:100%; display:flex; gap:10px; justify-content:center; background:rgba(60,30,10,.85); padding:6px; font-size:13px; } /* R14: hud-top 내부 흐름으로 — 좁은 화면에서 메뉴 버튼을 덮던 고정 위치 제거 */
+#panel { position:fixed; top:var(--hud-h, 50px); right:0; /* R14: HUD 실제 높이에 연동 (refreshHud가 --hud-h 갱신) */ width:min(360px,94vw); max-height:calc(100vh - var(--hud-h, 50px) - 150px); max-height:calc(100dvh - var(--hud-h, 50px) - 150px); overflow-y:auto; overscroll-behavior:contain; background:rgba(26,22,16,.96); border:1px solid #6b5d43; border-radius:6px 0 0 6px; padding:14px; z-index:20; font-size:14px; }
+#panel h3 { color:#d4af37; margin-bottom:8px; padding-right:36px; line-height:1.4; } /* R62: 지도 반액 안내 등 긴 헤더가 닫기 X와 겹치지 않도록 */
+#panel .cmd { display:inline-block; margin:3px 4px 3px 0; font-size:13px; padding:6px 10px; }
+#panel .officer { display:flex; gap:10px; align-items:center; padding:6px 0; border-bottom:1px solid #333; }
+#panel .officer .pimg { width:48px; height:48px; border-radius:4px; background-color:#333; display:inline-block; flex:none; }
+#panel .officer .nm { font-weight:bold; }
+#panel .officer .st { font-size:12px; color:#aa9; }
+#panel .officer > div { flex:1; min-width:0; }
+#panel .officer .st { overflow-wrap:break-word; word-break:keep-all; line-height:1.5; }
+#logbox { position:fixed; left:0; bottom:0; width:min(420px,80vw); max-height:130px; overflow-y:auto; background:rgba(20,17,12,.85); font-size:12px; padding:8px 10px; border-top:1px solid #554a36; z-index:10; }
+#logbox div { padding:1px 0; color:#cbb; }
+#logbox .me { color:#ffd700; }
+#modal { position:fixed; inset:0; background:rgba(0,0,0,.7); display:flex; align-items:center; justify-content:center; z-index:50; }
+#modal .box { background:#26211a; border:1px solid #d4af37; border-radius:8px; padding:24px; max-width:400px; text-align:center; display:flex; flex-direction:column; gap:12px; }
+.back { margin-top:8px; }
+select { background:#3a3226; color:#e8e0d0; border:1px solid #6b5d43; font-family:inherit; padding:3px 6px; }
+
+#btn-rot-l, #btn-rot-r { padding:5px 10px !important; font-size:15px !important; line-height:1; }
+
+/* R22: 패널 닫기 버튼 - 패널이 열려 있을 때만 표시, 내부 스크롤과 무관하게 항상 접근 가능 */
+#panel-x { display:none; position:fixed; top:calc(var(--hud-h, 50px) - 2px); right:6px; z-index:30; width:30px; height:30px; padding:0; font-size:18px; line-height:28px; border-radius:15px; background:#3a3020; color:#ffd700; border:1px solid #d4af37; cursor:pointer; }
+#panel:not(.hidden) + #panel-x { display:block; }
+
+/* R102: 모바일 — 모달 박스가 좁은 화면(390px)에서 넘치지 않도록 상한+가로 스크롤 (min-width 고정 박스 대응) */
+#modal .box { max-width:94vw; max-height:88vh; max-height:88dvh; overflow-x:auto; overflow-y:auto; }
+@media (max-width: 480px) {
+  #hud-top { font-size:12px; gap:8px; padding:6px 8px; }
+  #hud-top button { padding:5px 10px; font-size:12px; }
+  h1 { font-size:34px; letter-spacing:4px; }
+  /* R131: 모바일 — 일기토·설전 모달 inline min-width:420px가 390px 뷰포트에서 좌우 15px 클리핑 (실측 11/1) */
+  #modal .box { min-width:0 !important; }
+}
+
+/* R103: 모바일 — 패널을 하단 시트로 (390px 폭에서 우측 패널이 지도 전면을 가려 목표 탭 명령 불가하던 문제) */
+@media (max-width: 480px) {
+  #panel { top:auto; bottom:0; left:0; right:0; width:100%; max-height:46vh; max-height:46dvh; border-radius:8px 8px 0 0; }
+  #panel:not(.hidden) + #panel-x { top:auto; bottom:calc(46vh + 4px); bottom:calc(46dvh + 4px); }
+}
+
+/* R142 시설 패널: 스크롤 중에도 현재 개발지/자원 유지 */
+#panel .fac-status { position:sticky; top:-14px; background:#201c14; z-index:2; padding:8px 0; border-bottom:1px solid #6b5d43; }
+#panel .fac-status h3 { margin:0 0 4px; }
+#panel .fac-why { flex-basis:100%; color:#d9a18a; font-size:11px; text-align:right; }
+#panel[data-view="facilities"] .officer, #panel[data-view="tech"] .officer { flex-wrap:wrap; gap:4px 10px; }
+
+
+/* R145 스크롤 패널 바깥 배경 paint 경계 */
+#panel { clip-path:inset(0 round 6px 0 0 6px); }
+
+/* R217: result feedback, no engine timing or state changes. */
+.contest-fighters { text-align:center; padding:6px 0; background:linear-gradient(90deg,transparent,#453627,transparent); border-radius:6px; }
+.contest-feedback { color:#ffe3a0; background:#31291d; border:1px solid #6f5b38; border-radius:6px; padding:7px; margin:2px 0; min-height:2.4em; line-height:1.4; font-size:13px; overflow-wrap:anywhere; }
+.contest-fighters span { box-shadow:0 2px 6px #0008; }
+@media(max-width:480px){.contest-feedback{font-size:12px}.contest-fighters{padding:4px 0}}
