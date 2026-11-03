@@ -1,0 +1,9 @@
+# R254 healthy officer selection candidate
+
+AI's existing reinforce/land/naval selection can include injured officers. Engine correctly rejects entire party. Filter currently injured officers before existing war ordering, preserving requested party count from original city roster and all other rules/costs. All-injured sends none; expiry equality is healthy; injury timer untouched. This is not commander optimization or new combat policy.
+
+Diagnostic uses historical natural20 save but explicitly changes legion target11, city9 troops23000, AP255, and top officer116 injuredUntil26. These are fixture state, not natural campaign incidence. Baseline actual full turn20→21 attempts injured116 and rejects. Candidate selects healthy547 (변희), succeeds through same dispatch API: sword20000/food48000/legion2/target11/path4. Both seed42 final3086441138, UI candidate draws40. Original injury116 remains city9/injured26. Actual isolated390 UI next-turn and unit/overview pixels inspected; saved string reload exact/errors0; whole saved bytes match headless candidate. Earlier single-call diagnosis disabled recruitOfficer to isolate picker only; fullturn/UI do not disable it. Before-states are the same diagnostic.
+
+56 focused assertions cover3 pickers, healthy/first/second/all/expired/missing and actual dispatch cost/rejection. Full89 suites. Separate unchanged long snapshots184/190/251 turn1801→1921 seed411: baseline/candidate whole saves SHAexact, resources invalid0; dispatch totals101/123/189 with injured-choice0/failure0. This window establishes no natural injury failure. No natural quality improvement or frequency claim. Injury only arises in existing vital-duel branch, which is not newly modified. Not strategicAI completion.
+
+Pending parent review, remote/public0. No game engine, injury rule, AP/troop/arms cost, economy, R167/R182, portrait work changes.
