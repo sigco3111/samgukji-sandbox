@@ -2,6 +2,7 @@
 // 실행: node tools/smoke-all.mjs (repo 루트에서)
 import { spawnSync } from 'child_process';
 const SUITES = [
+  'tools/smoke-r254-healthy.mjs',
   'tools/smoke-r253-unitroute.mjs',
   'tools/smoke-r252-mapbattle.mjs',
   'tools/smoke-r250-legiontarget.mjs',
