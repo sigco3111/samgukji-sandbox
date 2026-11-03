@@ -1,7 +1,7 @@
-import {battleReports} from './battle-report.js?v=r252';
+import {battleReports} from './battle-report.js?v=r259';
 // Only newly appended, validated basic strike records. Never infer totals from logs.
 export function newBattleMarkers(game,oldRows){
- const records=battleReports({...game,logs:(game.logs??[]).filter(l=>!oldRows.has(l))}).slice(0,3);
+ const records=battleReports({...game,logs:(game.logs??[]).filter(l=>!oldRows.has(l))}).filter(r=>r.kind!=='tactic').slice(0,3);
  return records.flatMap(r=>[r.a,r.b].filter(s=>game.delegated||game.inVision(s.x,s.z)).map((s,i)=>({x:s.x,z:s.z,text:`${s.name} -${s.loss.toLocaleString()}명${r.kind==='siege'&&s===r.b?` · 내구 -${s.hpLoss.toLocaleString()}`:''}`,side:i})));
 }
 export function createMapBattleFeedback({doc=document,now=()=>Date.now()}){
