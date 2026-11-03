@@ -1,7 +1,7 @@
-import {unitLabelText} from './unit-label.js?v=r252';
+import {unitLabelText} from './unit-label.js?v=r253';
 // 3D 저폴리 지도 엔진 (Three.js) - 고정 등각 아이소메트릭 + 계단식 지형 + 성곽/숲
 import * as THREE from 'three';
-import { loadGLBAssets, applyEnvironment } from './assets-3d.js?v=r252';
+import { loadGLBAssets, applyEnvironment } from './assets-3d.js?v=r253';
 
 // R139: 결정적 전역 시설 배치. 지형·성곽·야전 시설·기배치 시설은 비용이 아닌 제외 조건.
 // 자리가 없으면 도시 상단 요약 표식으로 표현하며 수상에 육상 건물을 강제 배치하지 않는다.
@@ -781,6 +781,17 @@ export class Map3D {
     });
   }
 
+  setSelectedRoute(points) {
+    const key=JSON.stringify(points);if(key===this.routeKey)return;this.routeKey=key;
+    if(this.routeLine){this.scene.remove(this.routeLine);this.routeLine.geometry.dispose();this.routeLine.material.dispose();this.routeLine=null;}
+    if(points.length<2)return;
+    const vs=[];for(let i=1;i<points.length;i++){
+      const [ax,az]=toWorld(...points[i-1]),[bx,bz]=toWorld(...points[i]);
+      const count=Math.max(1,Math.min(256,Math.ceil(Math.hypot(bx-ax,bz-az)/.4)));
+      for(let j=i===1?0:1;j<=count;j++){const t=j/count,x=ax+(bx-ax)*t,z=az+(bz-az)*t;vs.push(new THREE.Vector3(x,Math.max(this.levelAtWorld(x,z)*STEP+.3,WATER_Y+.4),z));}
+    }
+    this.routeLine=new THREE.Line(new THREE.BufferGeometry().setFromPoints(vs),new THREE.LineDashedMaterial({color:0xffe680,dashSize:.65,gapSize:.35,transparent:true,opacity:.95,depthTest:false}));this.routeLine.computeLineDistances();this.routeLine.renderOrder=4;this.scene.add(this.routeLine);
+  }
   projectLL(lon,lat) { const [x,z]=toWorld(lon,lat); const v=new THREE.Vector3(x,2,z).project(this.camera); return {x:(v.x+1)*innerWidth/2,y:(1-v.y)*innerHeight/2,depth:v.z}; }
   focusCity(city) { const [x,z] = toWorld(city.lon, city.lat); this.camTarget.set(x, 0, z); this.view = 26; this.updateFrustum(); }
   updateFrustum() {
