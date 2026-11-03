@@ -2,6 +2,7 @@
 // 실행: node tools/smoke-all.mjs (repo 루트에서)
 import { spawnSync } from 'child_process';
 const SUITES = [
+  'tools/smoke-r331-develop-report.mjs',
   'tools/smoke-r328-scenarios.mjs',
   'tools/smoke-r327-ai-ground.mjs',
   'tools/smoke-r327-ground-fire.mjs',

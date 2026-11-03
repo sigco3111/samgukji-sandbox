@@ -1,0 +1,4 @@
+import fs from'node:fs';import assert from'node:assert/strict';import{Game}from'../js/game.js';
+const sc=JSON.parse(fs.readFileSync('data/scenario-208.json')),raw=JSON.parse(fs.readFileSync('data/officers670.json'));globalThis.localStorage={setItem(){}};
+for(const kind of['commerce','farm'])for(const before of[0,90,93,95,97,99,100]){const g=new Game(structuredClone(sc),Object.fromEntries(structuredClone(raw).map(o=>[o.idx,o])),{},0),c=g.forceCities(0)[0];c[kind]=before;c.gold=5000;g.forces[0].ap=100;const old=new Set(g.logs),p=g.forces[0].techP??0,r=g.develop(c.id,kind);if(before===100){assert.equal(r,false);assert.equal(c.gold,5000);assert.equal(g.forces[0].ap,100)}else{assert.equal(r,true);assert.equal(c.gold,4700);assert.equal(g.forces[0].ap,70);assert.equal(g.forces[0].techP,p+25);const row=g.logs.find(l=>!old.has(l));assert(row.msg.includes(`개발 +${c[kind]-before} (`));assert(c[kind]<=100)}}
+console.log('R331 development reported actual capped gain PASS');

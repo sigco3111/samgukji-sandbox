@@ -1,4 +1,4 @@
-import {battleReports} from './battle-report.js?v=r328';
+import {battleReports} from './battle-report.js?v=r331';
 // Historical command snapshot only. Never infer success or query live target values.
 export function commandFeedback(game,oldRows,pf,hit){
  if(hit?.type!=='unit')return '';

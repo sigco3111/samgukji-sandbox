@@ -1,6 +1,6 @@
-import {aiGroundAction} from './ground-fire.js?v=r328';
-import {supply} from './arms-policy.js?v=r328';
-import { SHIP_TYPES, TRAPS, FIELD_FACS, SIEGE_TYPES } from './game.js?v=r328';
+import {aiGroundAction} from './ground-fire.js?v=r331';
+import {supply} from './arms-policy.js?v=r331';
+import { SHIP_TYPES, TRAPS, FIELD_FACS, SIEGE_TYPES } from './game.js?v=r331';
 // 세력 AI — 위임 시 플레이어 세력도 이 AI가 운영 (위임·샌드박스의 실질 주체)
 export function aiThink(game, fid, legion = null) { // legion 지정 시 그 군단 소속 도시만 운영 (도독 위임)
   const waiting = game.pendingDebate;

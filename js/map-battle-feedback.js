@@ -1,5 +1,5 @@
-import {nonOverlappingBadges} from './battle-badge-layout.js?v=r328';
-import {battleReports} from './battle-report.js?v=r328';
+import {nonOverlappingBadges} from './battle-badge-layout.js?v=r331';
+import {battleReports} from './battle-report.js?v=r331';
 // Only newly appended, validated basic strike records. Never infer totals from logs.
 export function newBattleMarkers(game,oldRows){
  const records=battleReports({...game,logs:(game.logs??[]).filter(l=>!oldRows.has(l))}).filter(r=>!['tactic','strat'].includes(r.kind)).slice(0,3);

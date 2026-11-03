@@ -1,10 +1,10 @@
-import {mapRotationKey} from './map-keyboard.js?v=r328';
-import {placeUnitLabels} from './label-layout.js?v=r328';
-import {disposeDynamicTree} from './map-dispose.js?v=r328';
-import {unitLabelText} from './unit-label.js?v=r328';
+import {mapRotationKey} from './map-keyboard.js?v=r331';
+import {placeUnitLabels} from './label-layout.js?v=r331';
+import {disposeDynamicTree} from './map-dispose.js?v=r331';
+import {unitLabelText} from './unit-label.js?v=r331';
 // 3D 저폴리 지도 엔진 (Three.js) - 고정 등각 아이소메트릭 + 계단식 지형 + 성곽/숲
 import * as THREE from 'three';
-import { loadGLBAssets, applyEnvironment } from './assets-3d.js?v=r328';
+import { loadGLBAssets, applyEnvironment } from './assets-3d.js?v=r331';
 
 // R139: 결정적 전역 시설 배치. 지형·성곽·야전 시설·기배치 시설은 비용이 아닌 제외 조건.
 // 자리가 없으면 도시 상단 요약 표식으로 표현하며 수상에 육상 건물을 강제 배치하지 않는다.

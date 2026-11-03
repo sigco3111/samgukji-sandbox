@@ -1,4 +1,4 @@
-import {restoreGroundFires} from './ground-fire.js?v=r328';
+import {restoreGroundFires} from './ground-fire.js?v=r331';
 import {debateSnapshot,restoreDebate} from './debate-save.js?v=r200';
 
 import {duelSwapOptions,swapDuelOfficer} from './duel-swap.js?v=r198';
@@ -1047,10 +1047,11 @@ produceArms(id,key){const g=this;const c=g.cityById[id],a=this.armsInfo(c,key);i
     const best = Math.max(50, ...c.officers.map(i => this.officers[i].pol));
     c.gold -= 300; f.ap -= 30;
     if (bestOff != null) this.gainMerit(bestOff, MERIT.develop);
-    const gain = Math.round(4 + best/20);
-    c[kind] = Math.min(100, c[kind] + gain);
+    const gain = Math.round(4 + best/20), before = c[kind];
+    c[kind] = Math.min(100, before + gain);
+    const actualGain = c[kind] - before;
     this.gainTechP(c.force, 25); // 커맨드 실행 기교P
-    this.log(`${c.name_ko} ${kind==='commerce'?'상업':'농업'} 개발 +${gain} (담당 정치 ${best})`, c.force === this.playerForce);
+    this.log(`${c.name_ko} ${kind==='commerce'?'상업':'농업'} 개발 +${actualGain} (담당 정치 ${best})`, c.force === this.playerForce);
     return true;
   }
   recruit(cityId) { // 금 200 + 병량 1000 → 병사, AP 30
