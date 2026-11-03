@@ -1,25 +1,25 @@
-import {selectedUnitRoute} from './unit-route.js?v=r256';
-import {createMapBattleFeedback} from './map-battle-feedback.js?v=r256';
-import {renderCityFacilitySummary} from './city-fac-summary.js?v=r256';
-import {mountAim} from './aim-targets.js?v=r256';
-import {mountBattleReport} from './battle-report.js?v=r256';
-import {overlappingUnits} from './unit-overlap.js?v=r256';
-import {unitNearbyCities} from './unit-city-access.js?v=r256';
-import {unitOrderText} from './unit-order.js?v=r256';
-import {facilityEffectDesc} from './facility-desc.js?v=r256';
-import {mountDebate} from './debate-ui.js?v=r256';
-import {mountDuel} from './duel-ui.js?v=r256';
+import {selectedUnitRoute} from './unit-route.js?v=r258';
+import {createMapBattleFeedback} from './map-battle-feedback.js?v=r258';
+import {renderCityFacilitySummary} from './city-fac-summary.js?v=r258';
+import {mountAim} from './aim-targets.js?v=r258';
+import {mountBattleReport} from './battle-report.js?v=r258';
+import {overlappingUnits} from './unit-overlap.js?v=r258';
+import {unitNearbyCities} from './unit-city-access.js?v=r258';
+import {unitOrderText} from './unit-order.js?v=r258';
+import {facilityEffectDesc} from './facility-desc.js?v=r258';
+import {mountDebate} from './debate-ui.js?v=r258';
+import {mountDuel} from './duel-ui.js?v=r258';
 // 진입점: 화면 전환·UI·지도 연결
-import { Map3D, toWorld } from './map3d.js?v=r256';
-import { Game, SAVE_KEY, RULES, forceColor, UNIT_TYPES, ARTS, OFFICES, restoreOfficer, FIELD_FACS, TRAPS, SHIP_TYPES, TAC_SHIP_OK, josa, josaRo, TECH_BRANCHES, TECH_P, TECH_GOLD, TECH_DESC, FACILITIES, ITEMS, SIEGE_BUILD, SHIP_BUILD, ARMS_BUILD, AB_BRANCHES, AB_P, AB_SKILL, AB_PICK } from './game.js?v=r256';
-import { aiThink } from './ai.js?v=r256';
-import { rosterRows, rosterOfficer, rosterRelations } from './officer-roster.js?v=r256';
+import { Map3D, toWorld } from './map3d.js?v=r258';
+import { Game, SAVE_KEY, RULES, forceColor, UNIT_TYPES, ARTS, OFFICES, restoreOfficer, FIELD_FACS, TRAPS, SHIP_TYPES, TAC_SHIP_OK, josa, josaRo, TECH_BRANCHES, TECH_P, TECH_GOLD, TECH_DESC, FACILITIES, ITEMS, SIEGE_BUILD, SHIP_BUILD, ARMS_BUILD, AB_BRANCHES, AB_P, AB_SKILL, AB_PICK } from './game.js?v=r258';
+import { aiThink } from './ai.js?v=r258';
+import { rosterRows, rosterOfficer, rosterRelations } from './officer-roster.js?v=r258';
 
 const $ = id => document.getElementById(id);
 const mapBattleFeedback=createMapBattleFeedback({});
 let DATA = null, game = null, map = null, selectedUnit = null, autoTimer = null, pendingFire = null; // R15: 직접 전법·계략 대기
 
-const BUILD_ID = 'r256'; // 빌드 ID (index.html의 meta[name=build]와 같아야 함 - 오래된 캐시된 index와 새 스크립트의 혼합 감지)
+const BUILD_ID = 'r258'; // 빌드 ID (index.html의 meta[name=build]와 같아야 함 - 오래된 캐시된 index와 새 스크립트의 혼합 감지)
 function checkBuildSkew() {
   const idx = document.querySelector('meta[name="build"]')?.content;
   if (idx === BUILD_ID) { sessionStorage.removeItem('cheonha-xi-web.skew'); return; } // 일치하면 재시도 표식 해제
@@ -32,7 +32,7 @@ checkBuildSkew();
 async function loadData() {
   const [officers, skills, portraits, s184, s190, s251] = await Promise.all(
     ['data/officers670.json','data/skills.json','data/portraits.json','data/scenario-184.json','data/scenario-190.json','data/scenario-251.json']
-      .map(u => fetch(u + '?v=r256').then(r => r.json())));
+      .map(u => fetch(u + '?v=r258').then(r => r.json())));
   const byIdx = {};
   for (const o of officers) byIdx[o.idx] = o;
   DATA = { officers: byIdx, skills, portraits, scenarios: { '184': s184, '190': s190, '251': s251 } };
@@ -227,6 +227,7 @@ function refreshLog() {
 // === 턴·자동 진행 ===
 function doTurn() {
   if (!game || game.over) return;
+  if (game.reconcilePendingDiplo()) game.autosave();
   if ((game.pendingDiplo ?? []).length) { game.log('보류 중인 외교 제안을 먼저 결정해 주세요', true); refreshLog(); showPendingDecision(); return; } // R123: 보류 중 턴 진행 불가 — 결정 모달 재표시
   const oldBattleRows=new Set(game.logs);
   game.endTurn(aiThink);
@@ -267,6 +268,7 @@ function showBattleReport(){
  mountBattleReport({game,box:b,onFocus:(lon,lat)=>{const [x,z]=toWorld(lon,lat);map.camTarget.set(x,0,z);map.view=34;map.updateFrustum();m.classList.add('hidden')}});
 }
 function showPendingDecision() {
+  if (game.reconcilePendingDiplo?.()) game.autosave();
   if (game.over || (game.forces?.[game.playerForce]?.alive === false && !game.deadAck)) { checkGameOver(); return true; } // R201: never cover end/extinction choice
   if (game.pendingDuel) { showDuel(); return true; }
   if (game.pendingDebate) { showDebate(); return true; }
@@ -330,6 +332,7 @@ function showDebate() {
   mountDebate({game:ownerGame,d,m:$('modal'),portraitCss,save:()=>ownerGame.autosave(),finish:()=>{$('modal').classList.add('hidden');afterDiplo()}});
 }
 function autoAwaitingDecision(game) {
+  if (game.reconcilePendingDiplo?.()) game.autosave();
   const f = game.forces[game.playerForce];
   return !!(game.pendingDuel || game.pendingDebate || (game.pendingDiplo ?? []).length || (f && !f.alive && !game.deadAck));
 }

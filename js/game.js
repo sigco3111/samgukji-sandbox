@@ -942,11 +942,21 @@ export class Game {
     this._reconcileOfficerRosters(); // same existing dead-captor/roster rules now, before saving or another command
     this.log(`【항복】${josa(this.forceName(tid), ['이','가'])} ${this.forceName(fid)}에 항복했습니다! 도시 ${tCities.length}개와 무장이 귀속됩니다`, true);
   }
+  validPendingDiplo(it) {
+    return !!(it && it.tid === this.playerForce && it.fid !== it.tid && this.forces[it.fid]?.alive && this.forces[it.tid]?.alive);
+  }
+  reconcilePendingDiplo() { // R258: old controller/dead-party proposals are not decisions for this player. No refusal, refund or diplomatic effect.
+    const q = this.pendingDiplo ?? [], kept = q.filter(it => this.validPendingDiplo(it));
+    if (kept.length === q.length) return false;
+    this.pendingDiplo = kept;
+    return true;
+  }
   resolveDiplo(id, accept) { // R123: 보류 제안 수락/거절 — 처리된 id는 큐에서 제거되어 중복 수락 불가
     const q = this.pendingDiplo ?? [];
     const it = q.find(x => x.id === id);
     if (!it) return false;
     this.pendingDiplo = q.filter(x => x.id !== id);
+    if (!this.validPendingDiplo(it)) { this.autosave(); return false; }
     const d = this.diploOf(it.fid, it.tid), fn = this.forceName(it.fid);
     if (it.kind === 'envoy') {
       if (accept) { const v = this.changeRelation(it.fid, it.tid, it.gain); this.log(`【외교】${fn}의 친선 사절을 받았습니다 (관계 +${it.gain} → ${v} ${this.relStage(v)})`, true); }
@@ -1379,6 +1389,7 @@ produceArms(id,key){const g=this;const c=g.cityById[id],a=this.armsInfo(c,key);i
   // === 턴 진행 ===
   endTurn(aiThink) {
     if (this.over) return; // R14: 게임 종료 후 턴 진행 불가
+    this.reconcilePendingDiplo();
     if (this.pendingDuel || this.pendingDebate || (this.pendingDiplo ?? []).length) return; // R10/R11/R123: 일기토·설전·보류 외교 제안 결판 전 턴 진행 불가
     // 전 부대 기력 회복
     for (const u of this.units) { // R13: 훈련장 주둔 부대 +5
