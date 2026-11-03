@@ -1,24 +1,25 @@
-import {createMapBattleFeedback} from './map-battle-feedback.js?v=r252';
-import {renderCityFacilitySummary} from './city-fac-summary.js?v=r252';
-import {mountAim} from './aim-targets.js?v=r252';
-import {mountBattleReport} from './battle-report.js?v=r252';
-import {overlappingUnits} from './unit-overlap.js?v=r252';
-import {unitNearbyCities} from './unit-city-access.js?v=r252';
-import {unitOrderText} from './unit-order.js?v=r252';
-import {facilityEffectDesc} from './facility-desc.js?v=r252';
-import {mountDebate} from './debate-ui.js?v=r252';
-import {mountDuel} from './duel-ui.js?v=r252';
+import {selectedUnitRoute} from './unit-route.js?v=r253';
+import {createMapBattleFeedback} from './map-battle-feedback.js?v=r253';
+import {renderCityFacilitySummary} from './city-fac-summary.js?v=r253';
+import {mountAim} from './aim-targets.js?v=r253';
+import {mountBattleReport} from './battle-report.js?v=r253';
+import {overlappingUnits} from './unit-overlap.js?v=r253';
+import {unitNearbyCities} from './unit-city-access.js?v=r253';
+import {unitOrderText} from './unit-order.js?v=r253';
+import {facilityEffectDesc} from './facility-desc.js?v=r253';
+import {mountDebate} from './debate-ui.js?v=r253';
+import {mountDuel} from './duel-ui.js?v=r253';
 // 진입점: 화면 전환·UI·지도 연결
-import { Map3D, toWorld } from './map3d.js?v=r252';
-import { Game, SAVE_KEY, RULES, forceColor, UNIT_TYPES, ARTS, OFFICES, restoreOfficer, FIELD_FACS, TRAPS, SHIP_TYPES, TAC_SHIP_OK, josa, josaRo, TECH_BRANCHES, TECH_P, TECH_GOLD, TECH_DESC, FACILITIES, ITEMS, SIEGE_BUILD, SHIP_BUILD, ARMS_BUILD, AB_BRANCHES, AB_P, AB_SKILL, AB_PICK } from './game.js?v=r252';
-import { aiThink } from './ai.js?v=r252';
-import { rosterRows, rosterOfficer, rosterRelations } from './officer-roster.js?v=r252';
+import { Map3D, toWorld } from './map3d.js?v=r253';
+import { Game, SAVE_KEY, RULES, forceColor, UNIT_TYPES, ARTS, OFFICES, restoreOfficer, FIELD_FACS, TRAPS, SHIP_TYPES, TAC_SHIP_OK, josa, josaRo, TECH_BRANCHES, TECH_P, TECH_GOLD, TECH_DESC, FACILITIES, ITEMS, SIEGE_BUILD, SHIP_BUILD, ARMS_BUILD, AB_BRANCHES, AB_P, AB_SKILL, AB_PICK } from './game.js?v=r253';
+import { aiThink } from './ai.js?v=r253';
+import { rosterRows, rosterOfficer, rosterRelations } from './officer-roster.js?v=r253';
 
 const $ = id => document.getElementById(id);
 const mapBattleFeedback=createMapBattleFeedback({});
 let DATA = null, game = null, map = null, selectedUnit = null, autoTimer = null, pendingFire = null; // R15: 직접 전법·계략 대기
 
-const BUILD_ID = 'r252'; // 빌드 ID (index.html의 meta[name=build]와 같아야 함 - 오래된 캐시된 index와 새 스크립트의 혼합 감지)
+const BUILD_ID = 'r253'; // 빌드 ID (index.html의 meta[name=build]와 같아야 함 - 오래된 캐시된 index와 새 스크립트의 혼합 감지)
 function checkBuildSkew() {
   const idx = document.querySelector('meta[name="build"]')?.content;
   if (idx === BUILD_ID) { sessionStorage.removeItem('cheonha-xi-web.skew'); return; } // 일치하면 재시도 표식 해제
@@ -31,7 +32,7 @@ checkBuildSkew();
 async function loadData() {
   const [officers, skills, portraits, s184, s190, s251] = await Promise.all(
     ['data/officers670.json','data/skills.json','data/portraits.json','data/scenario-184.json','data/scenario-190.json','data/scenario-251.json']
-      .map(u => fetch(u + '?v=r252').then(r => r.json())));
+      .map(u => fetch(u + '?v=r253').then(r => r.json())));
   const byIdx = {};
   for (const o of officers) byIdx[o.idx] = o;
   DATA = { officers: byIdx, skills, portraits, scenarios: { '184': s184, '190': s190, '251': s251 } };
@@ -100,7 +101,7 @@ function enterGame() {
     game.renderedWaterFn = (lon, lat) => { const [x, z] = toWorld(lon, lat); return map.levels ? map.levelAtWorld(x, z) === 0 : true; }; // R64: 수군 출진 위치·연안 판정을 렌더러 지형과 일치시키는 주입 훅
     map.cityColorOf = f => forceColor(f); // R116: 성 기치 천 세력색
     map.onPick = onPick;
-    (function loop() { map.render(); mapBattleFeedback.render(game,(lon,lat)=>map.projectLL(lon,lat)); requestAnimationFrame(loop); })();
+    (function loop() { map.setSelectedRoute(selectedUnitRoute(game,selectedUnit,!$('panel').classList.contains('hidden')&&$('panel').dataset.view==='unit'&&!pendingFire&&$('modal').classList.contains('hidden'))); map.render(); mapBattleFeedback.render(game,(lon,lat)=>map.projectLL(lon,lat)); requestAnimationFrame(loop); })();
   }
   game.forestFn = (lon, lat) => map.forestAtLL(lon, lat);
   game.mountainFn = (lon, lat) => map.mountainAtLL(lon, lat); // 간도(산악 샛길)
@@ -1199,7 +1200,7 @@ function showUnitPanel(uid) {
     부장: ${u.officers.map(i => DATA.officers[i].name_ko).join(', ')}<br>기력 ${u.qi ?? 100} / 100${(u.conf ?? 0) > 0 ? ` · <span style='color:#e66'>혼란 ${u.conf}턴</span>` : ''}${u.food != null ? ` · 병량 ${Math.round(u.food)}${(() => { const eat = u.troops * RULES.garrisonFood / 3; const days = eat > 0 ? Math.round(u.food / eat) * 10 : 999; return days <= 30 ? ` <span style='color:#e66'>(${days}일분!)</span>` : ` (${days}일분)`; })()}` : ''}</p>
     <p>${unitNearbyCities(u,game.cities).map(c=>`<button class="cmd up-city" data-c="${c.id}">근처 도시: ${c.name_ko} 정보</button>`).join(' ')}</p>
     <p>${overlappingUnits(u,game.units).filter(other=>game.delegated || other.force===game.playerForce || game.inVision(other.x,other.z)).map(other=>`<button class="cmd up-overlap" data-u="${other.id}">겹친 부대: ${game.officers[other.officers?.[0]]?.name_ko ?? other.label} (${game.forceName(other.force)} · ${other.troops.toLocaleString()}명 · ${UNIT_TYPES[other.type].name})</button>`).join(' ')}</p>
-    <p id="up-order" style="color:#c9d6ab">${unitOrderText(u,game.cityById,game.fieldFacs)}</p>
+    <p id="up-order" style="color:#c9d6ab">${unitOrderText(u,game.cityById,game.fieldFacs)}</p>${mine&&u.path?.length?'<p class="st">지도 점선: 현재 저장된 이동 경로. 도착 시간·통행 성공을 보장하지 않습니다.</p>':''}
     ${mine ? '<p style="color:#ffd700">목표 도시를 클릭하면 이동 명령을 내립니다.</p>' : ''}
     ${mine && game.tacticInfo?.(u) ? `<p>${game.tacticInfo(u).opts.map(o => o.block ? `<button class="cmd up-tac" data-tid="${o.id}" disabled style="opacity:.5">전법 ${o.name} (기력 ${o.qi}) — ${o.block}</button>` : `<button class="cmd up-tac" data-tid="${o.id}">전법 ${o.name} (기력 ${o.qi})</button>`).join(' ')}</p>` : ''}
     ${mine && game.canAmbush(u) && game.ambushTarget(u) && (u._stratTurn ?? -1) !== game.turn && (u.qi ?? 100) >= 10 && u.officers.some(i => (DATA.officers[i]?.int ?? 0) >= 60) ? '<p><button class="cmd" id="up-ambush">계략 복병 (기력 10, 숲에서 인접 적 기습)</button></p>' : ''}
