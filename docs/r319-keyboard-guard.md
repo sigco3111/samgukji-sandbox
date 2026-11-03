@@ -1,0 +1,7 @@
+# R319 map shortcut typing guard
+
+Confirmed actual roster search q key rotates map90degrees in R318 while q is typed. e rotates it back, so inspecting only final qe state hid the bug; individual q capture/azimuth establishes it. R319 pure keyboard helper ignores input/textarea/select/editable descendants, composition(default event or keyCode229), ctrl/alt/meta and already-handled events. Plain q/Q and e/E outside editable controls retain existing rotation. No preventDefault, new hotkey, combat/AI/map-coordinate change.
+
+Actual isolated844x390/menu->roster->focussearch->typeq:evidenceR318az.7854->2.3562,R319stays.7854. Inputqe retainedboth. Afterclose/bodycanvas focus,qrotates2.3562/e.7854both. View-onlygameJSONanddiskexact/errors0. Final qsearch pixels inspected.127/127curated suites, dedicated pure helper boundaries. Not physicalkeyboard/IME-device test; composition suppression is syntheticgate, not realKoreanIME proof.
+
+Independent reinforcement hypothesis investigated before this:closest eligible-byroster source may haveallinjured while fartherhealthy sourceexists. 9x360unchangedAIentrysamples0occurrences; no runtimechange/newqualitypassfromthatstudy. No next policy proposal based on hypothetical case. LatestR319includes R318documentationcorrection:officialR180naturalengineproduced2in184seed1/300turn,currentR149seed7/90turn0is distinct; broadabsenceclaimwithdrawn. Public/portraits/originalsavesunchanged. Implementation80% / completenessincludingverification60% unchanged.

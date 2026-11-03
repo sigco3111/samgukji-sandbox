@@ -7,5 +7,5 @@ export function cityFacilitySummary(city){
 export function renderCityFacilitySummary(city,specs,open=false){
  const s=cityFacilitySummary(city),escape=x=>String(x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const rows=s.rows.map(f=>`<li><span>${escape(f.type)}${f.done?` Lv${f.level}`:' 공사'}</span><small>${f.done?'완성':`${f.progress}/${Number.isFinite(specs[f.type]?.turns)?specs[f.type].turns:'?'}턴`}${f.count>1?` · ${f.count}개`:''}</small></li>`).join('');
- return `<section class="city-fac-summary" aria-label="도시 시설 현황"><details${open?' open':''}><summary>시설 현황 <small>완성 ${s.done} · 공사 ${s.building}</small></summary>${rows?`<ul>${rows}</ul>`:'<p class="st">시설 없음</p>'}<p class="st">선택한 도시의 현재 시설 상태입니다.</p></details></section>`;
+ return `<section class="city-fac-summary" aria-label="도시 시설 현황"><details${open?' open':''}><summary>시설 현황 <small>완성 ${s.done} · 공사 ${s.building}</small></summary>${rows?`<ul>${rows}</ul>`:'<p class="st">시설 없음</p>'}<p class="st">선택한 도시의 전체 시설 상태입니다. 지도 요약 숫자는 개별 건물 대신 묶어 표시한 시설 수이며, 전체 시설 수와 다를 수 있습니다.</p></details></section>`;
 }

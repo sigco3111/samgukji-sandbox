@@ -26,7 +26,7 @@ Confirmed core work still open: long-term AI/delegation strategic quality across
 
 Environment-dependent verification: actual phone touch/orientation/audio/performance; normal high-resolution GPU speed; actual background-tab visibility pause/resume. Prior software rendering was very slow and actual hidden-state reproduction failed; do not mark those passed or repeat the identical blocked environment test.
 
-Held decisions: R167 monthly AI research/merge, R182 recruitment/economy effects, economy/diplomacy tuning; portrait400 external retry needs a new signal. Parent final visual review: all660 approved, canonical146 waiting connections/public514 remains separate from gameplay completion.
+Held decisions: R167 monthly AI research/merge, R182 recruitment/economy effects, economy/diplomacy tuning; portrait400 external retry needs a new signal. Final visual review: all660 approved, canonical146 waiting connections/public514 remains separate from gameplay completion.
 
 Unconfirmed/optional rather than mandatory missing features: reconnect catch-up option, kiai-like enhancement, PK battle-mode and six extra scenarios. Explicit excluded technology additions and server-persistent simulation remain excluded; no new mandatory travel/field/neutral recruitment expansion.
 

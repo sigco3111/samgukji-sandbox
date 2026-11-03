@@ -1,0 +1,7 @@
+# R311 battle report first-screen readability
+
+Actual UI problem reproduced on390x844: full scope paragraph occupies first260px of modal. First record begins374.6px, second begins below683px and is cut. R311 replaces always-open long scope note with native details/summary, retaining all text verbatim and adding short always-visible warning: historical command snapshot, not current state or total battle damage. First record begins218.6px, second527px, bringing second command's meaningful result onto first screen. Expanded note remains reachable through one summary click.
+
+Product change is presentation only, battle filtering/content/command mechanics/save schema unchanged.119/119groups pass. New gate checks full scope preserved, collapsed default, native summary, up-front caveat, readonly. Actual local menu->battle report UI on prepared121turn inherited observer logs/delegatedtrue, clock fixed beforeauto callback. Baseline/candidate screenshots390x844 inspected; same first record5879troops/conf0->2; second5119troops/fire3->0 now visible. Expansion screenshot inspected full scope text readable and remains intact. WholeGameJSON/storage exact on open, expansionGameJSON exact, errors0. Not newly generated battle, naturalplay, actual hidden-tab/device or strategy evidence. Previous first direct-control attempt had no eligible observer records; switched fixture mode todelegated, no logs rewritten.
+
+No deployment/original save/portrait660 changes. Current local rootR311; R309/R310 were evidence only. RecoveryR307full+R308delta+R311delta.

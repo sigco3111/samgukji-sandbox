@@ -1,0 +1,9 @@
+# R320 coastal-safe engine path display
+
+R253 selected-own-unit route display required every node length2, but R174 engine legitimately generates [x,z,'land-route'] on coastal-safe dense fallback. This silently hid the entire dashed line. Reproduced with initial251 force0 normaldispatch city0/officer182/sword1000 and normalordercity7: successful command, 57 tagged engine nodes, baseline display empty and actual UI no line. This is legal prepared initial-scenario execution, not observed spontaneous campaign incidence.
+
+Change only display helper: known exact3length land-route nodes become copied xy for display. Unknown tags/extra components/invalid numbers still rejected. Original engine stored nodes retain tag and contents; no movement/speed/pathfinding/save schema changes. Existing ordinary2node and mixed paths supported. Source index/js version cascadeR320. Dedicated boundary and copy test added, curated128/128pass.
+
+Actual isolated390x844 and844x390 UI same legal save: baseline linefalse, candidate linetrue113vertices; closeclearsboth; diskbytes exact both; errors0both. Portrait andwide pixels inspected, yellow dashed partial route visible. It extends outsideviewport/behindpanel, no fullroute/auto framing claim. Wholegame before-after was NOT exact: legacy view initializes defaultdiplo entries and _lev terrain caches. Captured final entire game per-key baseline==candidate, including units/path, establishing no extra game-state change in candidate relative to baseline. Do not mislabel this before-after gameexact.
+
+Current implementation80% / completenessincludingverification60% unchanged. Public original saves/portraits untouched. LongAIquality, physicaldevices, publication remain separate. R318 R180 naturalproduction correction inherited: actual official300turn seed1 run2production distinct from R149seed7/90turn0. No strategy quality claim.

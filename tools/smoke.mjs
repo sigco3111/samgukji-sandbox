@@ -2529,7 +2529,7 @@ console.log('sample logs:'); for (const l of g.logs.slice(-8)) console.log(' ', 
   console.log('R-ver2 빌드 버전 일치 게이트 PASS (' + meta + ')');
 
 // === R121: 대시보드 카드 구성 게이트 — 행말 주석이 같은 행의 카드 코드를 삼켜 금·군량 카드가 소실된 r120 결함 재발 방지
-// R122: 문자열 존재 검사는 주석 안 코드도 통과시키는 한계(부모 지적) — 행 주석을 제거한 '실행 가능 소스' 기준으로 검사.
+// R122: 문자열 존재 검사는 주석 안 코드도 통과시키는 한계(검토 의견) — 행 주석을 제거한 '실행 가능 소스' 기준으로 검사.
 // 한계 명시: // 제거는 문자열 리터럴 내부 // (예: 'https://')를 휴리스틱('://' 직전 문자가 영문자면 보존)으로 처리하므로 완전한 파싱은 아님. 블록 주석(/* */)으로 가린 코드는 못 잡음.
 {
   const raw = readFileSync('js/main.js', 'utf8');
@@ -2607,27 +2607,33 @@ console.log('sample logs:'); for (const l of g.logs.slice(-8)) console.log(' ', 
 {
   const fail = m => { console.log('FAIL: R104-wording ' + m); process.exit(1); };
   const src = readFileSync('js/main.js', 'utf8');
-  for (const t of ['개월 후 병량 부족 예상', '개월 후 금 부족 예상']) if (!src.includes(t)) fail('기간 표기 누락: ' + t);
+  for (const t of ['shortageMonthText(game.month,r.foodLackMonth)', 'shortageMonthText(game.month,r.goldLackMonth)']) if (!src.includes(t)) fail('달력/경과 개월 변환 누락: ' + t);
   if (/LackMonth\}월 (병량|금) 부족 예상/.test(src)) fail('구 표기(달력 월 오독 가능) 잔존');
   console.log('R104 부족 경고 기간 표기 게이트 PASS');
     }
 
-// === R107: 초상 아틀라스 514 연결 게이트 — map 514건·슬롯 중복 없음·좌표 범위·신규 시트 파일 존재 (최종통과 108 연결) ===
+// === R107: 초상 아틀라스 660 로컬 연결 게이트 — map 660건·슬롯 중복 없음·좌표 범위·신규 시트 파일 존재 (최종통과 108 연결) ===
 {
   const fail = m => { console.log('FAIL: R107 ' + m); process.exit(1); };
   const pj = JSON.parse(readFileSync('data/portraits.json', 'utf8'));
   const ents = Object.entries(pj.map);
-  if (ents.length !== 514) fail('map ' + ents.length + '건 != 514');
+  if (ents.length !== 660) fail('map ' + ents.length + '건 != 660');
   const slots = new Set();
   for (const [k, v] of ents) {
     const key = v.join(',');
     if (slots.has(key)) fail('슬롯 중복 ' + k + ' -> ' + key);
     slots.add(key);
     const [sh, c, r] = v;
-    if (!(Number.isInteger(sh) && sh >= 0 && sh <= 9 && Number.isInteger(c) && c >= 0 && c < 8 && Number.isInteger(r) && r >= 0 && r < 8)) fail('좌표 범위 초과 ' + k + ' -> ' + key);
+    if (!(Number.isInteger(sh) && sh >= 0 && sh <= 12 && Number.isInteger(c) && c >= 0 && c < 8 && Number.isInteger(r) && r >= 0 && r < 8)) fail('좌표 범위 초과 ' + k + ' -> ' + key);
   }
-  for (const sh of [8, 9]) { try { readFileSync('portraits-atlas/sheet-' + sh + '.jpg'); } catch { fail('sheet-' + sh + '.jpg 없음'); } }
-  console.log('R107 초상 아틀라스 514 연결 게이트 PASS (' + ents.length + '건)');
+  for (const sh of [...new Set(ents.map(([,v])=>v[0]))]) { try { readFileSync('portraits-atlas/sheet-' + sh + '.jpg'); } catch { fail('sheet-' + sh + '.jpg 없음'); } }
+  const oldPortrait = JSON.parse(readFileSync('tools/portrait-baseline-r290.json','utf8'));
+  for (const [id,coord] of Object.entries(oldPortrait.map)) if(JSON.stringify(pj.map[id])!==JSON.stringify(coord))fail('original514 coordinate changed '+id);
+  const addedPortrait = JSON.parse(readFileSync('tools/portrait-added-r290.json','utf8'));
+  if(addedPortrait.length!==146||new Set(addedPortrait).size!==146)fail('added146 identity');
+  for(const id of addedPortrait)if(oldPortrait.map[id]||!pj.map[id]||pj.map[id][0]<10)fail('new ID mapping '+id);
+  for(const id of [653,654,655,656,657,662,663,664,665,666])if(pj.map[id])fail('unproduced excluded '+id);
+  console.log('R107 초상 아틀라스 660 로컬 연결 게이트 PASS (' + ents.length + '건)');
       }
 
 // === R108: 도시 패널 턴 갱신 게이트 — 열린 도시 기본 패널만 갱신(스크롤 유지), 하위 화면(출진·기교 등) 입력 상태 보존 ===

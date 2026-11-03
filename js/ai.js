@@ -1,5 +1,6 @@
-import {supply} from './arms-policy.js?v=r258';
-import { SHIP_TYPES, TRAPS, FIELD_FACS, SIEGE_TYPES } from './game.js?v=r258';
+import {aiGroundAction} from './ground-fire.js?v=r328';
+import {supply} from './arms-policy.js?v=r328';
+import { SHIP_TYPES, TRAPS, FIELD_FACS, SIEGE_TYPES } from './game.js?v=r328';
 // 세력 AI — 위임 시 플레이어 세력도 이 AI가 운영 (위임·샌드박스의 실질 주체)
 export function aiThink(game, fid, legion = null) { // legion 지정 시 그 군단 소속 도시만 운영 (도독 위임)
   const waiting = game.pendingDebate;
@@ -202,7 +203,7 @@ export function aiThink(game, fid, legion = null) { // legion 지정 시 그 군
       if (d < bd) { bd = d; best = e; }
     }
     if (!best) continue;
-    const threatened = game.units.some(u => u.force !== fid && u.targetCity === c.id);
+    const threatened = game.units.some(u => u.force !== fid && u.targetCity === c.id && (u.force < 0 || !game.isPeace(fid, u.force))); // R315: treaty-protected movement is not a hostile city threat.
     // R208: a stronger nearest enemy must not hide an eligible neutral city.
     // Keep threatened defence and legion target filters unchanged.
     if (!threatened && !(c.troops > Math.max(best.troops * 1.5, 6000) && bd < 12)) {
@@ -326,6 +327,7 @@ export function aiThink(game, fid, legion = null) { // legion 지정 시 그 군
     if (burnCity && caster.int >= 60 && (u.qi ?? 100) >= 10 && game.fireStrat(u.id, 'douse', { type: 'city', id: burnCity.id })) continue; // 도시 지속불 소화
     const burning = game.units.find(x => x.force === u.force && (x.burn ?? 0) > 0 && inR(x.x, x.z));
     if (burning && caster.int >= 60 && (u.qi ?? 100) >= 10 && game.fireStrat(u.id, 'douse', { type: 'unit', id: burning.id })) continue; // R32 소화
+    if(aiGroundAction(game,u,false))continue;
     const tgt = game.units.find(x => x.force !== u.force && !game.isPeace(u.force, x.force) && !game.unitHasSkill(x, '위장') && inR(x.x, x.z));
     if ((u.qi ?? 100) >= 50 && tgt && ((u.id + game.turn) % 2 === 0) && (u.officers.some(i => game.officers[i]?.skill === '요술') ? game.fireStrat(u.id, 'sorcery', { type: 'unit', id: tgt.id }) : u.officers.some(i => game.officers[i]?.skill === '낙뢰') && game.fireStrat(u.id, 'thunder', { type: 'unit', id: tgt.id }))) continue; // 요술/낙뢰: 특기 보유 부대만
     const ally = game.units.find(x => x !== u && x.force === u.force && (x.conf ?? 0) > 0 && inR(x.x, x.z));
@@ -338,6 +340,7 @@ export function aiThink(game, fid, legion = null) { // legion 지정 시 그 군
       const ef = (game.fieldFacs ?? []).find(f => f.left <= 0 && !TRAPS.hasOwnProperty(f.type) && f.force != null && f.force !== u.force && !game.isPeace(u.force, f.force) && inR(f.x, f.z));
       if (ef) game.fireStrat(u.id, 'fire', { type: 'fac', id: ef.id });
     }
+    if((u._stratTurn??-1)!==game.turn)aiGroundAction(game,u);
   }
   // R180 isolated: protected additional production, same engine costs.
   supply(game,fid,legion);

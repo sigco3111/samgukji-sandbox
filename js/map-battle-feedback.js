@@ -1,11 +1,20 @@
-import {battleReports} from './battle-report.js?v=r252';
+import {nonOverlappingBadges} from './battle-badge-layout.js?v=r328';
+import {battleReports} from './battle-report.js?v=r328';
 // Only newly appended, validated basic strike records. Never infer totals from logs.
 export function newBattleMarkers(game,oldRows){
- const records=battleReports({...game,logs:(game.logs??[]).filter(l=>!oldRows.has(l))}).slice(0,3);
+ const records=battleReports({...game,logs:(game.logs??[]).filter(l=>!oldRows.has(l))}).filter(r=>!['tactic','strat'].includes(r.kind)).slice(0,3);
  return records.flatMap(r=>[r.a,r.b].filter(s=>game.delegated||game.inVision(s.x,s.z)).map((s,i)=>({x:s.x,z:s.z,text:`${s.name} -${s.loss.toLocaleString()}명${r.kind==='siege'&&s===r.b?` · 내구 -${s.hpLoss.toLocaleString()}`:''}`,side:i})));
 }
 export function createMapBattleFeedback({doc=document,now=()=>Date.now()}){
- let root=null,markers=[],until=0,owner=null;
- const clear=()=>{root?.remove();root=null;markers=[];owner=null};
- return {clear,show(game,oldRows){clear();markers=newBattleMarkers(game,oldRows);if(!markers.length)return;owner={game,fid:game.playerForce,delegated:game.delegated};until=now()+5000;root=doc.createElement('div');root.id='map-battle-feedback';root.setAttribute('aria-hidden','true');for(const m of markers){const el=doc.createElement('div');el.className='map-battle-badge';el.textContent='기본교전(최근3건) · '+m.text;root.append(el);m.el=el}doc.body.append(root)},render(game,project){if(!root)return;if(now()>until||owner.game!==game||owner.fid!==game.playerForce||owner.delegated!==game.delegated){clear();return}const hud=doc.getElementById('hud-top')?.getBoundingClientRect(),panel=doc.getElementById('panel'),pr=panel&&!panel.classList.contains('hidden')?panel.getBoundingClientRect():null;const modal=doc.getElementById('modal'),blocked=modal&&!modal.classList.contains('hidden');for(const m of markers){const p=project(m.x,m.z),el=m.el;const x=p.x,y=p.y-48-m.side*40,w=el.offsetWidth,h=el.offsetHeight;el.hidden=blocked||!(game.delegated||game.inVision(m.x,m.z))||p.depth<-1||p.depth>1||x-w/2<0||x+w/2>innerWidth||y<(hud?.bottom??0)||y+h>innerHeight||(pr&&x+w/2>pr.left&&x-w/2<pr.right&&y+h>pr.top&&y<pr.bottom);el.style.left=x+'px';el.style.top=y+'px'}}};
+ let root=null,markers=[],until=0,owner=null,note=null;
+ const clear=()=>{root?.remove();root=null;markers=[];owner=null;note=null};
+ return {clear,show(game,oldRows){clear();markers=newBattleMarkers(game,oldRows);if(!markers.length)return;owner={game,fid:game.playerForce,delegated:game.delegated};until=now()+5000;root=doc.createElement('div');root.id='map-battle-feedback';root.setAttribute('aria-hidden','true');for(const m of markers){const el=doc.createElement('div');el.className='map-battle-badge';el.textContent='기본교전(최근3건) · '+m.text;root.append(el);m.el=el}note=doc.createElement('div');note.className='map-battle-note';note.hidden=true;root.append(note);doc.body.append(root)},render(game,project){if(!root)return;if(now()>until||owner.game!==game||owner.fid!==game.playerForce||owner.delegated!==game.delegated){clear();return}const hud=doc.getElementById('hud-top')?.getBoundingClientRect(),panel=doc.getElementById('panel'),pr=panel&&!panel.classList.contains('hidden')?panel.getBoundingClientRect():null;const modal=doc.getElementById('modal'),blocked=modal&&!modal.classList.contains('hidden');const candidates=[];for(const m of markers){const p=project(m.x,m.z),el=m.el;el.hidden=false;const x=p.x,y=p.y-48-m.side*40,w=el.offsetWidth,h=el.offsetHeight;el.hidden=blocked||!(game.delegated||game.inVision(m.x,m.z))||p.depth<-1||p.depth>1||x-w/2<0||x+w/2>innerWidth||y<(hud?.bottom??0)||y+h>innerHeight||(pr&&x+w/2>pr.left&&x-w/2<pr.right&&y+h>pr.top&&y<pr.bottom);el.style.left=x+'px';el.style.top=y+'px';candidates.push({x:x-w/2,y,w,h,eligible:!el.hidden})}let shown=nonOverlappingBadges(candidates);const eligible=candidates.filter(c=>c.eligible).length;
+ note.hidden=true;if(shown.filter(Boolean).length<eligible){
+ const left=8,top=(hud?.bottom??0)+4;let width=Math.min(380,innerWidth-16);
+ if(pr&&pr.top<top+45&&pr.bottom>top&&pr.left>left)width=Math.min(width,pr.left-left-8);
+ note.style.left=left+'px';note.style.top=top+'px';note.style.maxWidth=Math.max(0,width)+'px';note.hidden=false;
+ note.textContent='겹친 표식 '+(eligible-shown.filter(Boolean).length)+'개 생략 · 전투 보고에서 확인';
+ const nr=note.getBoundingClientRect();shown=nonOverlappingBadges(candidates.map(c=>({...c,eligible:c.eligible&&!(c.x<nr.right&&c.x+c.w>nr.left&&c.y<nr.bottom&&c.y+c.h>nr.top)})));
+ note.textContent='겹친 표식 '+(eligible-shown.filter(Boolean).length)+'개 생략 · 전투 보고에서 확인';
+ }markers.forEach((m,i)=>{m.el.hidden=!shown[i]})}};
 }

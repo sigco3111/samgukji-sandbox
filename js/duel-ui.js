@@ -9,6 +9,12 @@ export function mountDuel({game,d,m,portraitCss,save,finish,doc=document}) {
   let queued=null,disposed=false,previous=null,previousBout=null,lastHit=[false,false];
   const owner={};m.duelOwner=owner;m.classList.remove('hidden');
   m.innerHTML=`<div class="box contest-dialog" style="min-width:420px;gap:4px;padding:14px"><h3 id="duel-title" style="color:#f66"></h3><div id="duel-fighters" class="contest-fighters"></div><p id="duel-feedback" class="contest-feedback" role="status" aria-live="polite" aria-atomic="true"></p><div id="duel-stats" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px"></div><p id="duel-log" role="log" aria-label="최근 일기토 기록" aria-live="off" style="font-size:12px;color:#cbb;min-height:36px"></p><p>방침: ${STANCES.map(([s,n])=>`<button class="cmd duel-stance" data-s="${s}">${n}</button>`).join(' ')}</p><p id="duel-swaps"></p><p>필살: ${CMDS.map(([n,need])=>`<button class="cmd duel-cmd" data-c="${n}">${n}${need?` (투지${need})`:''}</button>`).join(' ')}</p><p id="duel-queued" style="font-size:12px"></p><p id="duel-status" role="status" aria-live="polite"></p><p id="duel-reasons" style="font-size:11px;color:#aaa"></p><p><button class="cmd" id="duel-play">시작</button> <button class="cmd" id="duel-pause">정지</button> <button class="cmd" id="duel-go">합 진행</button> <button class="cmd" id="duel-auto">위임 (자동)</button></p><p style="font-size:11px;color:#aaa">실시간 약1.2초/합 · 정지 중 교체 가능 · 필살은 다음 합에 사용 · 새로고침 시 정지/필살 대기 해제</p></div>`;
+  // R318: keep clock controls reachable while fighter details scroll.
+  const dialog=m.querySelector('.contest-dialog');dialog.classList.add('duel-dialog');
+  const body=doc.createElement('div');body.className='duel-body';
+  const footer=doc.createElement('div');footer.className='duel-footer';
+  const children=[...dialog.children];for(const el of children.slice(0,-2))body.appendChild(el);
+  for(const el of children.slice(-2))footer.appendChild(el);dialog.appendChild(body);dialog.appendChild(footer);
   const $=id=>m.querySelector('#'+id);
   const active=()=>!disposed&&game.pendingDuel===d&&!d.done&&m.duelOwner===owner&&!m.classList.contains('hidden');
   const bar=(v,max,color,label)=>`<span role="progressbar" aria-label="${label}" aria-valuemin="0" aria-valuemax="${max}" aria-valuenow="${Math.max(0,v)}" style="display:inline-block;width:100px;height:10px;background:#333"><span style="display:block;width:${Math.max(0,Math.min(100,v/max*100))}%;height:100%;background:${color}"></span></span>`;

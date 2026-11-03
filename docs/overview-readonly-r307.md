@@ -1,0 +1,7 @@
+# R307 overview read-only diplomacy lookup
+
+Local candidate on R306. forceOverview threat analysis called isPeace, which creates missing default diplomatic pairs. Opening dashboard could materialize records without an issued command. Changed only that analysis peace check to existing-record read with same default0 and inclusive expiry semantics. Threat results, AI/economy policies, command paths and save schema unchanged. AI callers still receive same full threat rows; R304 UI visibility filtering unchanged.
+
+117/117 groups pass. New14actual Game cases check whole JSON immutability plus isPeace-equivalent threat results for missing/alliance/truce/past/current/future records atturn1/10. Actual390x844 prepared121turn/controller2direct/July/hidden enemy fixture, diplo reset empty after continue only for test: baseline dashboard adds6records while candidate adds0. Both dashboard texts exactly same, whole game JSON changes in baseline but candidate stays exact; storage exact/errors0 inboth. Screenshot pixels inspected and same readable3visible threats, hidden one still excluded. Internal JSON instrumentation establishes record difference, not screenshot. No turn executed or natural event claim. Previous R304 normal-populated fixture readonly claim remains scoped there; this missing-record case closes additional path. Other read-only methods not globally audited or declared fixed.
+
+Original user save/660portraits/remote unchanged. Deployment/physical phone/AI strategic judgment remain open. Recovery full source and manifest include all current local code.

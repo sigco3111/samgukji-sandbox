@@ -1,0 +1,3 @@
+import fs from 'node:fs';import assert from 'node:assert/strict';
+const s=fs.readFileSync('js/main.js','utf8'),line=s.split('\n').find(l=>l.includes('class="unit-burn-status"')),expr=line.trim().slice(2,-1),render=new Function('u','mine','game','DATA','return '+expr);
+let n=0;for(const mine of[true,false])for(const qi of[9,10])for(const int of[59,60])for(const used of[true,false])for(const burn of[0,3]){const u={burn,qi,officers:[1],_stratTurn:used?5:4},g={turn:5},d={officers:{1:{int}}},before=JSON.stringify(u);const html=render(u,mine,g,d);assert.equal(html.includes('불이 붙었습니다'),burn>0);assert.equal(html.includes('id="up-douse"'),burn>0&&mine&&qi>=10&&int>=60&&!used);assert.equal(JSON.stringify(u),before);n+=3}console.log('R296 fire status '+n+' assertions PASS');

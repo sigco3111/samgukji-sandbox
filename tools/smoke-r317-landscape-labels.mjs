@@ -1,0 +1,1 @@
+import assert from 'node:assert/strict';import fs from 'node:fs';const src=fs.readFileSync('js/map3d.js','utf8');assert(src.includes('readability=Math.min(1,Math.max(.7,height/700))'));assert.equal(Math.min(1,Math.max(.7,844/700)),1);assert.equal(Math.min(1,Math.max(.7,390/700)),.7);assert(.7>390/700);console.log('R317 short-screen floor and tall-screen unchanged PASS');

@@ -14,7 +14,7 @@ Only when the ordinary nearest enemy is not eligible AND no current threatened-c
 -Initial broadtargetalternative and removethreatenedexception alternatives were diagnostic only and rejected; not in candidate.
 
 ## Publication
-Localcandidate only. Parentfinalscope decision, remotebyteproof/PR, merge/Pages/live checks still required. No completionpercentage change. R167/R182, economy/diplomacyretuning, portraitupload400 and physicaldevice limitations remain held.
+Localcandidate only. Final scope decision, remotebyteproof/PR, merge/Pages/live checks still required. No completionpercentage change. R167/R182, economy/diplomacyretuning, portraitupload400 and physicaldevice limitations remain held.
 
 ## Fixture
 `tools/fixture-r208-natural-ai.json` preserves generated simulationstate+RNG+callcontext at firstdifferingdecision. No externalaccountdata or actualusergame save. Boundary tests explicitlyalterselected fields and isolate recruitment to hold the intended garrison threshold. Suchtests are fixtures, not naturalplay outcomes.

@@ -1,3 +1,4 @@
+import {restoreGroundFires} from './ground-fire.js?v=r328';
 import {debateSnapshot,restoreDebate} from './debate-save.js?v=r200';
 
 import {duelSwapOptions,swapDuelOfficer} from './duel-swap.js?v=r198';
@@ -295,8 +296,9 @@ export class Game {
     }
     const hanCap = this.cities.find(c => c.name_ko === '낙양'); // R17: 황제 옹립 (자체 설계, 설계안 97·102행) — 184·190은 후한 황제가 낙양에 존재, 251은 부재. 소재 도시 보유 세력이 옹립한 것으로 간주
     this.emperor = (this.scenId === '184' || this.scenId === '190') && hanCap ? { city: hanCap.id, holder: hanCap.force ?? null } : null;
+    if(Number.isInteger(scen.emperorCity)&&this.cityById[scen.emperorCity]){const c=this.cityById[scen.emperorCity];this.emperor={city:c.id,holder:c.force??null};}
     this.units = []; this.nextUnitId = 1;
-    this.fieldFacs = []; this.nextFacId = 1; // R26
+    this.groundFires = []; this.fieldFacs = []; this.nextFacId = 1; // R26
     this.diplo = {}; // 세력 간 외교
     this.itemPool = ITEMS.map(i => i.id); // 미발견 명품: 'a_b'(a<b) → { v: 관계 0-100, allianceUntil, aidTurn }
     this.playerForce = playerForceId;
@@ -353,10 +355,12 @@ export class Game {
     }));
     const threats = []; // 적 부대가 내 도시 3.0° 이내 접근 중이거나 내 도시를 목표로 지정 (야전 교전 거리 2.2 기준 외곽)
     for (const u of this.units) {
-      if (u.force === fid || u.force === -1 || this.isPeace(u.force, fid)) continue;
+      if (u.force === fid || u.force === -1) continue;
+      const d=this.diplo?.[this.diploKey(u.force,fid)]; // Read-only overview: do not materialize default diplomatic pairs.
+      if ((d?.allianceUntil??0)>=this.turn || (d?.truceUntil??0)>=this.turn) continue;
       for (const c of cities) {
         const d = Math.hypot(u.x - c.lon, u.z - c.lat);
-        if (u.targetCity === c.id || d < 3.0) { threats.push({ label: u.label, forceName: this.forceName(u.force), troops: u.troops, city: c.name_ko, dist: +d.toFixed(2) }); break; }
+        if (u.targetCity === c.id || d < 3.0) { threats.push({ unitId: u.id, label: u.label, forceName: this.forceName(u.force), troops: u.troops, city: c.name_ko, dist: +d.toFixed(2) }); break; }
       }
     }
     const fieldBuilding = (this.fieldFacs ?? []).filter(f => f.force === fid && f.left > 0).map(f => ({ type: f.type, left: f.left }));
@@ -1266,7 +1270,7 @@ produceArms(id,key){const g=this;const c=g.cityById[id],a=this.armsInfo(c,key);i
     const ci = x => Math.round((x - lon0) / st), cj = z => Math.round((z - lat0) / st);
     const passRaw = (i, j) => ship ? this._rw(lon0 + i * st, lat0 + j * st) : !isSeaAt(lon0 + i * st, lat0 + j * st); // R68: 수군 중간 경로도 렌더링된 수로만 — 격자 수로(isWaterAt)는 화면상 육지를 지나는 항로를 만들어 라이브에서 좌초했음
     const art = !!this.forces[u.force]?.arts?.['난소행군'];
-    const stepCostRaw = (i, j) => { if (ship) return 1; const x = lon0 + i * st, z = lat0 + j * st; if (!isRiverAt(x, z)) return this.passAt(x, z) ? (art ? 1.3 : 2.2) : 1; return art ? 1.25 : (isFordAt(x, z) ? 1.7 : 2.9); }; // R23: 여울 우선 도하, 난소행군 시 완화
+    const stepCostRaw = (i, j) => { if (ship) return 1; const x = lon0 + i * st, z = lat0 + j * st; const danger=(this.groundFires??[]).some(f=>Math.hypot(x-f.x,z-f.z)<.7&&(u.force!==this.playerForce||this.delegated||this.inVision(f.x,f.z)))?8:0; if (!isRiverAt(x, z)) return danger+(this.passAt(x, z) ? (art ? 1.3 : 2.2) : 1); return danger+(art ? 1.25 : (isFordAt(x, z) ? 1.7 : 2.9)); }; // R23: 여울 우선 도하, 난소행군 시 완화
     const passMemo = new Map(), costMemo = new Map(); // R160: 한 탐색 안에서 같은 셀 판정만 재사용. 경로·지형·난소행군 규칙 불변
     const pass = (i, j) => { const k = i * 1000 + j; if (!passMemo.has(k)) passMemo.set(k, passRaw(i, j)); return passMemo.get(k); };
     const stepCost = (i, j) => { const k = i * 1000 + j; if (!costMemo.has(k)) costMemo.set(k, stepCostRaw(i, j)); return costMemo.get(k); };
@@ -1388,6 +1392,18 @@ produceArms(id,key){const g=this;const c=g.cityById[id],a=this.armsInfo(c,key);i
 
   // === 턴 진행 ===
   endTurn(aiThink) {
+    if(this._savingTurn||this.turnFault)return;
+    this._savingTurn=true;this._turnSaveRequested=false;
+    let finished=false;
+    try { this._endTurnEffects(aiThink);finished=true; }
+    finally {
+      const requested=this._turnSaveRequested;
+      this._savingTurn=false;this._turnSaveRequested=false;
+      if(finished&&requested)this.autosave();
+      if(!finished){this.turnFault=true;this.saveFailed=true;try{this.onSaveStatus?.(false)}catch{}}
+    }
+  }
+  _endTurnEffects(aiThink) {
     if (this.over) return; // R14: 게임 종료 후 턴 진행 불가
     this.reconcilePendingDiplo();
     if (this.pendingDuel || this.pendingDebate || (this.pendingDiplo ?? []).length) return; // R10/R11/R123: 일기토·설전·보류 외교 제안 결판 전 턴 진행 불가
@@ -1401,7 +1417,7 @@ produceArms(id,key){const g=this;const c=g.cityById[id],a=this.armsInfo(c,key);i
     // 도시 공성 처리는 stepUnit 내부
     // 야전: 접촉한 적 부대끼리 교전
     this.resolveFieldBattles();
-    this.aiFieldBuild(); this.fieldTurn(); this.floodTurn(); this.cityBurnTurn(); this.facBurnTurn(); // R26: 야전 시설 // R76: 시설 화염 DoT
+    this.groundFireTurn(); this.aiFieldBuild(); this.fieldTurn(); this.floodTurn(); this.cityBurnTurn(); this.facBurnTurn(); // R26: 야전 시설 // R76: 시설 화염 DoT
     // 수입: 매 3순(한 달)
     if (this.dan === 3) {
       for (const c of this.cities) {
@@ -1522,8 +1538,8 @@ produceArms(id,key){const g=this;const c=g.cityById[id],a=this.armsInfo(c,key);i
       if (this.emperor && this.emperorHolder() === f.id) this.gainTechP(f.id, 10); // R17: 옹립 세력 기교P 월 +10 (설계안 97행, 자체 수치)
       f.ab = f.ab ?? { '공격': 0, '방어': 0, '계략': 0, '내정': 0 };
       const abTodo = Object.keys(AB_BRANCHES).filter(b => (f.ab[b] ?? 0) < 3 && (f.techP ?? 0) >= AB_P[f.ab[b] ?? 0] + 300).sort((a, b) => AB_P[f.ab[a] ?? 0] - AB_P[f.ab[b] ?? 0]);
-      if (abTodo.length && f.id !== this.playerForce) this.researchAbility(f.id, abTodo[0]); // AI만 자동, 플레이어는 수동
-      if (f.id === this.playerForce) continue; // 플레이어 합병은 수동
+      if (abTodo.length && (f.id !== this.playerForce || this.delegated)) this.researchAbility(f.id, abTodo[0]); // 위임 중 내 세력도 기존 AI 월 연구 규칙, 직접 조작은 수동
+      if (f.id === this.playerForce && !this.delegated) continue; // 직접 조작의 합병은 수동
       for (const c of this.forceCities(f.id)) {
         if (c.gold < 400) continue;
         const byType = {};
@@ -2108,6 +2124,10 @@ produceArms(id,key){const g=this;const c=g.cityById[id],a=this.armsInfo(c,key);i
       const d = this.units.find(x => x.id === target.id);
       if (!d || d.force === u.force || this.isPeace(u.force, d.force) || !inRange(d.x, d.z)) return false;
       if (!this._tacTargetOk(u, d, tac)) return false; // R74: 전법별 대상 제약 (격돌 船 전용, 창·극·기병·목수 전법 선박 대상 불가 — 매뉴얼 대상표)
+      const tacticSnapshot = {v:1,recordedFor:this.playerForce,observed:!!this.delegated,kind:'tactic',turn:this.turn,year:this.year,month:this.month,tactic:tac.name,
+        qiBefore:u.qi??100,confBefore:d.conf??0,
+        a:{id:u.id,name:lead.name_ko,force:u.force,x:u.x,z:u.z,before:u.troops,loss:0,after:u.troops},
+        b:{id:d.id,name:this.officers[d.officers[0]]?.name_ko??d.label,force:d.force,x:d.x,z:d.z,before:d.troops}};
       const utA = UNIT_TYPES[u.type], utD = UNIT_TYPES[d.type];
       let dmg = Math.round(u.troops * 0.05 * utA.atk * (0.7 + lead.war/150) / utD.def * this.aptMult(u) * this.unitDmgMult(u) * this.unitItemAtk(u) * this.unitDefMult(d) * this.unitTechAtk(u) * this.unitRelMult(u) / this.unitRelMult(d) * (1 - 0.03 * this.techLv(d.force, '연병'))); // 야전 산식과 동일
       let extraBase = Math.round(u.troops * 0.05 * utA.atk * (0.7 + lead.war/150) / utD.def * this.aptMult(u) * this.unitDmgMult(u) * this.unitItemAtk(u) * this.unitDefMult(d, false) * this.unitTechAtk(u) * this.unitRelMult(u) / this.unitRelMult(d) * (1 - 0.03 * this.techLv(d.force, '연병'))); // 야전 산식과 동일
@@ -2119,7 +2139,9 @@ produceArms(id,key){const g=this;const c=g.cityById[id],a=this.armsInfo(c,key);i
       d.troops = Math.max(0, d.troops - dmg);
       this.gainTechP(u.force, Math.min(40, Math.floor(dmg / 100)));
       const note = tac.eff ? this._tacExtra(u, d, tac, extraBase) : '';
-      this.log(`【전법】${lead.name_ko}의 ${tac.name}! 야전에서 ${d.label}에 큰 피해 (-${dmg})${note}`, u.force === this.playerForce);
+      tacticSnapshot.b.after=d.troops;tacticSnapshot.b.loss=tacticSnapshot.b.before-d.troops;
+      tacticSnapshot.qiAfter=u.qi;tacticSnapshot.confAfter=d.conf??0;tacticSnapshot.moved=Math.hypot(d.x-tacticSnapshot.b.x,d.z-tacticSnapshot.b.z);
+      this.log(`【전법】${lead.name_ko}의 ${tac.name}! 야전에서 ${d.label}에 큰 피해 (-${dmg})${note}`, u.force === this.playerForce, tacticSnapshot);
       if (d.troops <= 0) { this._rehomeOfficers(d, u.force, u.type === 'pike' ? 0.15 : 0); this.units = this.units.filter(x => x !== d); this.log(`${d.label} 부대가 전멸했습니다`, false); } // R111: 전법 격파 포박 (극병 가산)
       this.autosave();
       return true;
@@ -2172,16 +2194,53 @@ produceArms(id,key){const g=this;const c=g.cityById[id],a=this.armsInfo(c,key);i
     }
     return false;
   }
+  restoreGroundFires(raw) { return restoreGroundFires(raw); }
+  canGroundFire(u,x,z) {
+    return (this.groundFires??[]).length<100&&Number.isFinite(x)&&Number.isFinite(z)&&x>=100&&x<=126.5&&z>=21.5&&z<=43&&Math.hypot(x-u.x,z-u.z)<2.2&&!isSeaAt(x,z)&&!isRiverAt(x,z)&&(u.force!==this.playerForce||this.delegated||this.inVision(x,z))&&!this.cities.some(c=>Math.hypot(c.lon-x,c.lat-z)<.7)&&!this.units.some(v=>Math.hypot(v.x-x,v.z-z)<.35)&&!(this.fieldFacs??[]).some(f=>Math.hypot(f.x-x,f.z-z)<.5)&&!(this.groundFires??[]).some(f=>Math.hypot(f.x-x,f.z-z)<.5);
+  }
+  groundFireTurn() {
+    for(const f of this.groundFires??[]) {
+      f.touched??=[];for(const u of this.units) if(!SHIP_TYPES.has(u.type)&&Math.hypot(u.x-f.x,u.z-f.z)<.55&&!f.touched.includes(u.id)) {f.touched.push(u.id);if((u.burn??0)>0)continue;u.burn=3;this.log(`【지형 화재】${u.label}에 불이 옮겨붙었습니다 (다음 턴부터 기존 화상 적용)`,u.force===this.playerForce);}
+      f.left--;
+    }
+    this.groundFires=(this.groundFires??[]).filter(f=>f.left>0);
+  }
   forestAt(x, z) { return !!this.forestFn?.(x, z); } // 숲 판정: 렌더가 쓰는 셀과 동일(map3d.forestAtLL 연결, 저장 없음)
   canAmbush(u) { const t = UNIT_TYPES[u.type]; return !!t && u.type !== 'cav' && !t.siege && !SHIP_TYPES.has(u.type) && this.forestAt(u.x, u.z); }
   ambushTarget(u) { return this.units.find(d => d.force !== u.force && !this.isPeace(u.force, d.force) && Math.hypot(d.x - u.x, d.z - u.z) < 1.2) ?? null; }
-  fireStrat(uid, kind, target) { // 직접 계략: 성공률·비용·효과는 자동 발동과 동일, 부대당 턴 1회 시도
+  fireStrat(uid, kind, target) {
+    const u=this.units.find(x=>x.id===uid), d=kind==='ambush'&&u?this.ambushTarget(u):target?.type==='unit'?this.units.find(x=>x.id===target.id):null;
+    const tracked=['fire','ambush','confuse','rumor','calm','douse','sorcery','thunder'].includes(kind)&&u&&d;
+    const side=v=>({id:v.id,name:this.officers[v.officers[0]]?.name_ko??v.label,force:v.force,x:v.x,z:v.z,before:v.troops,loss:0,after:v.troops});
+    const r=tracked?{v:1,kind:'strat',strat:STRATS[kind].name,turn:this.turn,year:this.year,month:this.month,recordedFor:this.playerForce,observed:!!this.delegated,a:side(u),b:side(d),qiBefore:u.qi??100,targetQiBefore:d.qi??100,confBefore:d.conf??0,burnBefore:d.burn??0,targetBefore:d.targetCity??null}:null;
+    const peace=x=>{const p=this.diplo?.[this.diploKey(u.force,x.force)];return u.force!==x.force&&((p?.allianceUntil??0)>=this.turn||(p?.truceUntil??0)>=this.turn)};
+    const area=r&&['sorcery','thunder'].includes(kind)?this.units.filter(x=>x.force!==u.force&&!peace(x)&&Math.hypot(x.x-d.x,x.z-d.z)<=STRATS[kind].radius&&(this.delegated||x.force===this.playerForce||this.inVision(x.x,x.z))).map(x=>({unit:x,snapshot:{...side(x),confBefore:x.conf??0}})):null;
+    const old=r?new Set(this.logs):null;
+    const beforeSave=r?()=>{const row=this.logs.find(l=>!old.has(l));if(row){r.b.after=d.troops;r.b.loss=r.b.before-d.troops;r.qiAfter=u.qi??100;r.targetQiAfter=d.qi??100;r.confAfter=d.conf??0;r.burnAfter=d.burn??0;r.targetAfter=d.targetCity??null;r.outcome=row.msg;if(area)r.area=area.map(({unit:x,snapshot:t})=>({...t,after:x.troops,loss:t.before-x.troops,confAfter:x.conf??0}));row.battle=r;}}:null;
+    return this._fireStratEffects(uid,kind,target,beforeSave);
+  }
+  _fireStratEffects(uid, kind, target, beforeSave = null) { // 직접 계략: 성공률·비용·효과는 자동 발동과 동일, 부대당 턴 1회 시도
     const u = this.units.find(x => x.id === uid);
     if (!u || (u.conf ?? 0) > 0 || (u._stratTurn ?? -1) === this.turn) return false;
     const caster = u.officers.map(i => this.officers[i]).sort((a, b) => b.int - a.int)[0];
     if (!caster) return false;
     const inRange = (x, z) => Math.hypot(x - u.x, z - u.z) < 2.2;
     const enemyUnit = () => { const d = this.units.find(x => x.id === target.id); return (d && d.force !== u.force && !this.isPeace(u.force, d.force) && !this.unitHasSkill(d, '위장') && inRange(d.x, d.z)) ? d : null; };
+    if (target?.type === 'ground' && ['fire','douse'].includes(kind)) {
+      const x=target.x,z=target.z;
+      if(caster.int<(kind==='fire'?STRATS.fire.minInt:STRATS.douse.minInt)||(u.qi??100)<10||!inRange(x,z)||(u.force===this.playerForce&&!this.delegated&&!this.inVision(x,z)))return false;
+      if(kind==='douse') {
+        const f=(this.groundFires??[]).find(f=>f.x===x&&f.z===z);if(!f)return false;
+        this.groundFires=this.groundFires.filter(v=>v!==f);u.qi-=10;u._stratTurn=this.turn;
+        this.log(`【소화】${caster.name_ko} 지형 ${x.toFixed(1)}, ${z.toFixed(1)}의 불을 껐습니다`,u.force===this.playerForce);this.autosave();return true;
+      }
+      if(!this.canGroundFire(u,x,z))return false;
+      u._stratTurn=this.turn;
+      const p=Math.min(.5,.1+caster.int/300+(this.unitHasSkill(u,'풍계')?.15:0));
+      if(Math.random()>=p){this.log(`【계략】${caster.name_ko}의 지형 화계가 실패했습니다`,u.force===this.playerForce);this.autosave();return true;}
+      u.qi-=10;this.gainMerit(caster.idx,MERIT.stratagem);this.groundFires??=[];this.groundFires.push({x,z,left:3});
+      this.log(`【화계】지형 ${x.toFixed(1)}, ${z.toFixed(1)}에 불을 붙였습니다 (3턴·접촉한 육군은 소속 불문 화상, 즉시 피해·중첩·확산 없음)`,u.force===this.playerForce);this.autosave();return true;
+    }
     if (kind === 'fire') {
       if (caster.int < STRATS.fire.minInt || (u.qi ?? 100) < STRATS.fire.qi) return false;
       const p = Math.min(0.5, 0.1 + caster.int/300 + (this.unitHasSkill(u, '풍계') ? 0.15 : 0));
@@ -2189,7 +2248,7 @@ produceArms(id,key){const g=this;const c=g.cityById[id],a=this.armsInfo(c,key);i
         const d = enemyUnit();
         if (!d) return false;
         u._stratTurn = this.turn;
-        if (Math.random() >= p * (1 - this.mindDefense(d.force))) { this.log(`【계략】${caster.name_ko}의 화계가 ${d.label}에 실패했습니다`, u.force === this.playerForce); this.autosave(); return true; }
+        if (Math.random() >= p * (1 - this.mindDefense(d.force))) { this.log(`【계략】${caster.name_ko}의 화계가 ${d.label}에 실패했습니다`, u.force === this.playerForce); beforeSave?.(); this.autosave(); return true; }
         u.qi -= STRATS.fire.qi;
         this.gainMerit(caster.idx, MERIT.stratagem);
         const burn = Math.round(d.troops * 0.06 * (1 + 0.15 * this.techLv(u.force, '화공')));
@@ -2197,14 +2256,14 @@ produceArms(id,key){const g=this;const c=g.cityById[id],a=this.armsInfo(c,key);i
         this.log(`【계략】${caster.name_ko}의 화계! ${d.label} 병력 -${burn} (불이 번져 3턴간 계속 탑니다)`, u.force === this.playerForce);
         d.burn = 3; this.fireSpread(u, d);
         if (d.troops <= 0) { this._rehomeOfficers(d, u.force); this.units = this.units.filter(x => x !== d); this.log(`${d.label} 부대가 전멸했습니다`, false); } // R111: 화계 격파 포박
-        this.autosave();
+        beforeSave?.(); this.autosave();
         return true;
       }
       if (target.type === 'city') {
         const c = this.cityById[target.id];
         if (!c || c.force == null || c.force === u.force || this.isPeace(u.force, c.force) || !inRange(c.lon, c.lat)) return false;
         u._stratTurn = this.turn;
-        if (Math.random() >= p * (1 - this.mindDefense(c.force))) { this.log(`【계략】${caster.name_ko}의 화계가 ${c.name_ko}에 실패했습니다`, u.force === this.playerForce); this.autosave(); return true; }
+        if (Math.random() >= p * (1 - this.mindDefense(c.force))) { this.log(`【계략】${caster.name_ko}의 화계가 ${c.name_ko}에 실패했습니다`, u.force === this.playerForce); beforeSave?.(); this.autosave(); return true; }
         u.qi -= STRATS.fire.qi;
         this.gainMerit(caster.idx, MERIT.stratagem);
         const burn = Math.round(c.troops * 0.08 * (1 + 0.15 * this.techLv(u.force, '화공')));
@@ -2212,14 +2271,14 @@ produceArms(id,key){const g=this;const c=g.cityById[id],a=this.armsInfo(c,key);i
         c.hp = Math.max(0, c.hp - Math.round(burn * 0.5));
         c.burn = 3; c._burnOwner = c.force; // 도시 지속불: 3턴간 턴당 수비병 -3%·내구 -1.5% (자체 잠정값, 소화로 끌 수 있음)
       this.log(`【계략】${caster.name_ko}의 화계! ${c.name_ko} 수비병 -${burn} (불이 번져 3턴간 계속 탑니다)`, u.force === this.playerForce);
-        this.autosave();
+        beforeSave?.(); this.autosave();
         return true;
       }
       if (target.type === 'fac') { // R76: 화계 시설 대상 (매뉴얼 火計 対象 部隊・拠点・施設・地形) — 즉시 현재 내구의 6%(화공 기교 보정) + 3턴 화염 DoT, 수치는 자체 잠정값
         const f = (this.fieldFacs ?? []).find(x => x.id === target.id);
         if (!f || f.force == null || f.force === u.force || this.isPeace(u.force, f.force) || !inRange(f.x, f.z)) return false;
         u._stratTurn = this.turn;
-        if (Math.random() >= p * (1 - this.mindDefense(f.force))) { this.log(`【계략】${caster.name_ko}의 화계가 ${f.type}에 실패했습니다`, u.force === this.playerForce); this.autosave(); return true; }
+        if (Math.random() >= p * (1 - this.mindDefense(f.force))) { this.log(`【계략】${caster.name_ko}의 화계가 ${f.type}에 실패했습니다`, u.force === this.playerForce); beforeSave?.(); this.autosave(); return true; }
         u.qi -= STRATS.fire.qi;
         this.gainMerit(caster.idx, MERIT.stratagem);
         const burn = Math.max(1, Math.round(f.hp * 0.06 * (1 + 0.15 * this.techLv(u.force, '화공'))));
@@ -2227,7 +2286,7 @@ produceArms(id,key){const g=this;const c=g.cityById[id],a=this.armsInfo(c,key);i
         f.burn = 3;
         this.log(`【계략】${caster.name_ko}의 화계! ${f.type}에 불을 붙였습니다 (내구 -${burn}, 3턴간 계속 탑니다)`, u.force === this.playerForce);
         if (f.hp <= 0) { this.fieldFacs = this.fieldFacs.filter(x => x !== f); this.log(`【야전】${josa(f.type, ['이','가'])} 파괴되었습니다`, u.force === this.playerForce || f.force === this.playerForce); }
-        this.autosave();
+        beforeSave?.(); this.autosave();
         return true;
       }
       return false;
@@ -2236,13 +2295,13 @@ produceArms(id,key){const g=this;const c=g.cityById[id],a=this.armsInfo(c,key);i
       const d = this.ambushTarget(u);
       if (!d || !this.canAmbush(u) || caster.int < STRATS.ambush.minInt || (u.qi ?? 100) < STRATS.ambush.qi) return false;
       u._stratTurn = this.turn;
-      if (Math.random() >= Math.min(0.7, 0.3 + caster.int / 250) * (1 - this.mindDefense(d.force))) { this.log(`【계략】${caster.name_ko}의 복병이 ${d.label}에 간파당했습니다`, u.force === this.playerForce); this.autosave(); return true; }
+      if (Math.random() >= Math.min(0.7, 0.3 + caster.int / 250) * (1 - this.mindDefense(d.force))) { this.log(`【계략】${caster.name_ko}의 복병이 ${d.label}에 간파당했습니다`, u.force === this.playerForce); beforeSave?.(); this.autosave(); return true; }
       u.qi -= STRATS.ambush.qi; // 화계와 동일: 실패 시 기력 소모 없음, 성공 시 소모
       this.gainMerit(caster.idx, MERIT.stratagem);
       const hit = Math.round(d.troops * 0.07); d.troops = Math.max(0, d.troops - hit); d.qi = Math.max(0, (d.qi ?? 100) - 20);
       this.log(`【계략】${caster.name_ko}의 복병! ${d.label} 병력 -${hit}, 기력 -20`, u.force === this.playerForce);
       if (d.troops <= 0) { this._rehomeOfficers(d, u.force); this.units = this.units.filter(x => x !== d); this.log(`${d.label} 부대가 전멸했습니다`, false); } // R111: 화계 격파 포박
-      this.autosave();
+      beforeSave?.(); this.autosave();
       return true;
     }
     if (kind === 'douse' && target.type === 'fac') { // R112: 시설 소화 (매뉴얼 消火 — 自部隊のいるマスか周囲2マスの火を消す·気力10. 대상 소유 불문 타일 화재)
@@ -2250,7 +2309,7 @@ produceArms(id,key){const g=this;const c=g.cityById[id],a=this.armsInfo(c,key);i
       if (!f || (f.burn ?? 0) <= 0 || !inRange(f.x, f.z) || caster.int < STRATS.douse.minInt || (u.qi ?? 100) < STRATS.douse.qi) return false;
       u._stratTurn = this.turn; u.qi -= STRATS.douse.qi; f.burn = 0;
       this.log(`【계략】${caster.name_ko}의 소화! ${f.type}의 불을 껐습니다`, u.force === this.playerForce || f.force === this.playerForce);
-      this.autosave();
+      beforeSave?.(); this.autosave();
       return true;
     }
     if (kind === 'douse' && target.type === 'city') {
@@ -2258,7 +2317,7 @@ produceArms(id,key){const g=this;const c=g.cityById[id],a=this.armsInfo(c,key);i
       if (!c || c.force !== u.force || (c.burn ?? 0) <= 0 || !inRange(c.lon, c.lat) || caster.int < STRATS.douse.minInt || (u.qi ?? 100) < STRATS.douse.qi) return false;
       u._stratTurn = this.turn; u.qi -= STRATS.douse.qi; c.burn = 0;
       this.log(`【계략】${caster.name_ko}의 소화! ${c.name_ko}의 불을 껐습니다`, u.force === this.playerForce);
-      this.autosave();
+      beforeSave?.(); this.autosave();
       return true;
     }
     if (kind === 'douse') {
@@ -2266,7 +2325,7 @@ produceArms(id,key){const g=this;const c=g.cityById[id],a=this.armsInfo(c,key);i
       if (!d || d.force !== u.force || (d.burn ?? 0) <= 0 || !inRange(d.x, d.z) || caster.int < STRATS.douse.minInt || (u.qi ?? 100) < STRATS.douse.qi) return false;
       u._stratTurn = this.turn; u.qi -= STRATS.douse.qi; d.burn = 0;
       this.log(`【계략】${caster.name_ko}의 소화! ${d.label}의 불을 껐습니다`, u.force === this.playerForce);
-      this.autosave();
+      beforeSave?.(); this.autosave();
       return true;
     }
     if (kind === 'confuse') {
@@ -2274,12 +2333,12 @@ produceArms(id,key){const g=this;const c=g.cityById[id],a=this.armsInfo(c,key);i
       const d = enemyUnit();
       if (!d) return false;
       u._stratTurn = this.turn;
-      if (Math.random() >= Math.min(0.35, 0.08 + caster.int/400) * (1 - this.mindDefense(d.force))) { this.log(`【계략】${caster.name_ko}의 교란이 ${d.label}에 실패했습니다`, u.force === this.playerForce); this.autosave(); return true; }
+      if (Math.random() >= Math.min(0.35, 0.08 + caster.int/400) * (1 - this.mindDefense(d.force))) { this.log(`【계략】${caster.name_ko}의 교란이 ${d.label}에 실패했습니다`, u.force === this.playerForce); beforeSave?.(); this.autosave(); return true; }
       u.qi -= STRATS.confuse.qi;
       this.gainMerit(caster.idx, MERIT.stratagem);
       d.conf = Math.max(d.conf ?? 0, STRATS.confuse.turns);
       this.log(`【계략】${caster.name_ko}의 교란! ${josa(d.label, ['이','가'])} ${STRATS.confuse.turns}턴간 움직이지 못합니다`, u.force === this.playerForce);
-      this.autosave();
+      beforeSave?.(); this.autosave();
       return true;
     }
     if (kind === 'rumor') {
@@ -2287,14 +2346,14 @@ produceArms(id,key){const g=this;const c=g.cityById[id],a=this.armsInfo(c,key);i
       const d = enemyUnit();
       if (!d) return false;
       u._stratTurn = this.turn;
-      if (Math.random() >= Math.min(0.4, 0.1 + caster.int/350) * (1 - this.mindDefense(d.force))) { this.log(`【계략】${caster.name_ko}의 위보가 ${d.label}에 통하지 않았습니다`, u.force === this.playerForce); this.autosave(); return true; }
+      if (Math.random() >= Math.min(0.4, 0.1 + caster.int/350) * (1 - this.mindDefense(d.force))) { this.log(`【계략】${caster.name_ko}의 위보가 ${d.label}에 통하지 않았습니다`, u.force === this.playerForce); beforeSave?.(); this.autosave(); return true; }
       u.qi -= STRATS.rumor.qi;
       this.gainMerit(caster.idx, MERIT.stratagem);
       const home = this.forceCities(d.force).sort((pp, qq) => Math.hypot(pp.lon-d.x, pp.lat-d.z) - Math.hypot(qq.lon-d.x, qq.lat-d.z))[0];
       const rp = home ? this.findPath(d, home.lon, home.lat) : null;
       if (rp) { d.targetCity = home.id; d.tx = home.lon; d.tz = home.lat; d.path = rp; d.engaged = null; this.log(`【계략】${caster.name_ko}의 위보! ${josa(d.label, ['이','가'])} 거짓 보고에 속아 ${josaRo(home.name_ko)} 퇴각합니다`, u.force === this.playerForce); }
       else this.log(`【계략】${caster.name_ko}의 위보가 ${d.label}에 통하지 않았습니다 (퇴각로 없음)`, u.force === this.playerForce);
-      this.autosave();
+      beforeSave?.(); this.autosave();
       return true;
     }
     if (kind === 'calm') {
@@ -2306,7 +2365,7 @@ produceArms(id,key){const g=this;const c=g.cityById[id],a=this.armsInfo(c,key);i
       this.gainMerit(caster.idx, MERIT.stratagem);
       d.conf = 0; d.qi = Math.min(100, (d.qi ?? 100) + 20);
       this.log(`【계략】${caster.name_ko}의 진정! ${josa(d.label, ['이','가'])} 안정을 되찾았습니다`, u.force === this.playerForce);
-      this.autosave();
+      beforeSave?.(); this.autosave();
       return true;
     }
     if (kind === 'sorcery' || kind === 'thunder') { // 특기 보유 무장이 있는 부대만(지력·기술로 우회 불가), 대상 부대 중심 광역
@@ -2318,13 +2377,13 @@ produceArms(id,key){const g=this;const c=g.cityById[id],a=this.armsInfo(c,key);i
       if (!d) return false;
       u._stratTurn = this.turn;
       const p = Math.min(0.8, 0.3 + holder.int / 250) * (1 - this.mindDefense(d.force));
-      if (Math.random() >= p) { this.log(`【계략】${holder.name_ko}의 ${S.name}이 ${d.label}에 통하지 않았습니다`, u.force === this.playerForce); this.autosave(); return true; }
+      if (Math.random() >= p) { this.log(`【계략】${holder.name_ko}의 ${S.name}이 ${d.label}에 통하지 않았습니다`, u.force === this.playerForce); beforeSave?.(); this.autosave(); return true; }
       u.qi -= S.qi;
       this.gainMerit(holder.idx, MERIT.stratagem);
       const hit = this.units.filter(x => x.force !== u.force && !this.isPeace(u.force, x.force) && Math.hypot(x.x - d.x, x.z - d.z) <= S.radius);
       for (const x of hit) { const l = Math.round(x.troops * S.loss); x.troops -= l; x.conf = Math.max(x.conf ?? 0, S.conf); }
       this.log(`【계략】${holder.name_ko}의 ${S.name}! 범위 안 적 부대 ${hit.length}개가 피해를 입고 혼란에 빠졌습니다`, u.force === this.playerForce);
-      this.autosave();
+      beforeSave?.(); this.autosave();
       return true;
     }
     return false;
@@ -2715,10 +2774,12 @@ d.done = true;
   }
 
   autosave() {
+    if(this.turnFault){this.saveFailed=true;try{this.onSaveStatus?.(false)}catch{}return false;}
+    if(this._savingTurn){this._turnSaveRequested=true;return true;}
     try {
       const data = {
         saveV: 2, econV: this.econV, scenId: this.scenId, year: this.year, month: this.month, dan: this.dan, turn: this.turn, emperor: this.emperor, econGraceUntil: this.econGraceUntil, // saveV 2: 병량 경제 마이그레이션 판별 / R17: 옹립 상태 영속 (구 세이브는 생성자 기본값으로 복원)
-        cities: this.cities, forces: this.forces, units: this.units, nextUnitId: this.nextUnitId, fieldFacs: this.fieldFacs, nextFacId: this.nextFacId,
+        groundFires: this.groundFires ?? [], cities: this.cities, forces: this.forces, units: this.units, nextUnitId: this.nextUnitId, fieldFacs: this.fieldFacs, nextFacId: this.nextFacId,
         playerForce: this.playerForce, delegated: this.delegated, deadAck: this.deadAck, logs: this.logs.slice(-60), diplo: this.diplo, itemPool: this.itemPool, chronicle: this.chronicle, over: this.over, unified: this.unified, // R14
         pendingDiplo: this.pendingDiplo ?? [], // R123: 보류 외교 제안 영속 — reload 후에도 결정 대기 복원 (효과는 resolveDiplo에서만 적용, 복원 시 재적용 없음)
         pendingDebate: this.debateSnapshot(),

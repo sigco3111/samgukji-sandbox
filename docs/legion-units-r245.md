@@ -23,4 +23,4 @@ Actual local390x844/softwareWebGL UI: old natural16 save, actual two formations,
 Harness issues: wrong Playwright argument, old debate auto selector and map-coordinate city pick hitting overlapping unit were corrected. Existing nearbycity button reaches city; no product fix attributed to these automation errors. Broad real-phone, highresolutionGPU, all multi-legion campaigns, natural premature retreat incidence and strategy quality remain unproven.
 
 ## Status
-Local candidate only. No PR/remote/public change until parent review. B manual-command blocking remains isolated and rejected for lack of clear design basis. Runtime publicR244 remains current.
+Local candidate only. No PR/remote/public change until review. B manual-command blocking remains isolated and rejected for lack of clear design basis. Runtime publicR244 remains current.

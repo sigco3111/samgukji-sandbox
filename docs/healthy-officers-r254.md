@@ -6,4 +6,4 @@ Diagnostic uses historical natural20 save but explicitly changes legion target11
 
 56 focused assertions cover3 pickers, healthy/first/second/all/expired/missing and actual dispatch cost/rejection. Full89 suites. Separate unchanged long snapshots184/190/251 turn1801→1921 seed411: baseline/candidate whole saves SHAexact, resources invalid0; dispatch totals101/123/189 with injured-choice0/failure0. This window establishes no natural injury failure. No natural quality improvement or frequency claim. Injury only arises in existing vital-duel branch, which is not newly modified. Not strategicAI completion.
 
-Pending parent review, remote/public0. No game engine, injury rule, AP/troop/arms cost, economy, R167/R182, portrait work changes.
+Pending review, remote/public0. No game engine, injury rule, AP/troop/arms cost, economy, R167/R182, portrait work changes.
