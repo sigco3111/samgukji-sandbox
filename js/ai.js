@@ -1,5 +1,5 @@
-import {supply} from './arms-policy.js?v=r253';
-import { SHIP_TYPES, TRAPS, FIELD_FACS, SIEGE_TYPES } from './game.js?v=r253';
+import {supply} from './arms-policy.js?v=r254';
+import { SHIP_TYPES, TRAPS, FIELD_FACS, SIEGE_TYPES } from './game.js?v=r254';
 // 세력 AI — 위임 시 플레이어 세력도 이 AI가 운영 (위임·샌드박스의 실질 주체)
 export function aiThink(game, fid, legion = null) { // legion 지정 시 그 군단 소속 도시만 운영 (도독 위임)
   const waiting = game.pendingDebate;
@@ -9,6 +9,7 @@ export function aiThink(game, fid, legion = null) { // legion 지정 시 그 군
   if (!f || !f.alive) return;
   let cities = game.forceCities(fid);
   if (legion) cities = cities.filter(c => legion.cities.includes(c.id));
+  const healthyOfficers = c => c.officers.filter(i => (game.officers[i]?.state?.injuredUntil ?? 0) <= game.turn); // R254: dispatch rejects the whole party when any member is injured
   const commands = u => u.force === fid && (!legion || game.unitLegion(u)?.id === legion.id);
   // R9: 치안 순찰 — 치안 80 미만 도시, 플레이어와 동일 비용 (금100·AP20)
   for (const c of cities) if ((c.security ?? 80) < 80) game.patrol(c.id);
@@ -175,11 +176,11 @@ export function aiThink(game, fid, legion = null) { // legion 지정 시 그 군
     if (pair && !needy.includes(pair.d)) offOnly = true;
     if (pair) {
       const { s: src, d } = pair;
-      const offs = [...src.officers].sort((a, b) => game.officers[a].war - game.officers[b].war); // 전투력 최하부터 파견
+      const offs = healthyOfficers(src).sort((a, b) => game.officers[a].war - game.officers[b].war); // 전투력 최하부터 파견
       const n = offOnly ? Math.min(1000, src.troops - 3000) : Math.min(src.troops - 3000, Math.max(3000, 4000 - d.troops));
       let type = 'sword';
       if (src.spears >= n) type = 'spear'; else if (src.pikes >= n) type = 'pike'; else if (src.bows >= n) type = 'bow'; else if (src.horses >= n) type = 'cav';
-      const u = n >= 1000 ? game.dispatch(src.id, [offs[0]], n, type) : null;
+      const u = n >= 1000 ? (offs.length ? game.dispatch(src.id, [offs[0]], n, type) : null) : null;
       if (u && !game.orderUnit(u.id, d.id)) game.orderUnit(u.id, src.id); // 노선 없으면 원도시 대기 (R17b 회복 패턴)
     }
   }
@@ -216,8 +217,8 @@ export function aiThink(game, fid, legion = null) { // legion 지정 시 그 군
       // 출진
       const n = Math.min(c.troops - 3000, Math.round(best.troops * 1.6) + 3000);
       if (n >= 3000) {
-        const offs = [...c.officers].sort((a,b) => game.officers[b].war - game.officers[a].war);
-        const pick = offs.slice(0, Math.min(2, offs.length - 1 || 1));
+        const offs = healthyOfficers(c).sort((a,b) => game.officers[b].war - game.officers[a].war);
+        const pick = offs.slice(0, Math.min(2, c.officers.length - 1 || 1));
         if (pick.length > 0) {
           let type = 'sword';
           if (c.spears >= n) type = 'spear'; else if (c.horses >= n) type = 'cav'; else if (c.pikes >= n) type = 'pike'; else if (c.bows >= n) type = 'bow';
@@ -239,8 +240,8 @@ export function aiThink(game, fid, legion = null) { // legion 지정 시 그 군
       }
       const n2 = Math.min(c.troops - 3000, 5000);
       if (bn && n2 >= 3000) {
-        const offs2 = [...c.officers].sort((a, b) => game.officers[b].war - game.officers[a].war);
-        const pick2 = offs2.slice(0, Math.min(2, offs2.length - 1 || 1));
+        const offs2 = healthyOfficers(c).sort((a, b) => game.officers[b].war - game.officers[a].war);
+        const pick2 = offs2.slice(0, Math.min(2, c.officers.length - 1 || 1));
         if (pick2.length > 0) {
           const u2 = game.dispatch(c.id, pick2, n2, shipType);
           if (u2 && !game.orderUnit(u2.id, bn.id)) game.orderUnit(u2.id, c.id);
